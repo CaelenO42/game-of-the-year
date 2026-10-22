@@ -1,0 +1,16 @@
+{
+  "name": "game-of-the-year",
+  "version": "1.0.0",
+  "description": "A website allowing users to find and rate games",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "nodemon server.js"
+  },
+  "keywords": [],
+  "author": "CaelenO42",
+  "license": "ARR",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
+}
