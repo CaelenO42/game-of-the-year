@@ -4,10 +4,10 @@
   "description": "A website allowing users to find and rate games",
   "main": "server.js",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "node --env-file=.env dist/server.js",
     "typecheck": "tsc --noEmit",
     "build": "tsc",
-    "dev": "tsx watch src/server.ts"
+    "dev": "tsx watch --env-file=.env src/server.ts"
   },
   "keywords": [],
   "author": "CaelenO42",
