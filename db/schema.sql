@@ -18,6 +18,7 @@ CREATE TABLE IF NOT EXISTS platform (
     igdb_id INTEGER NOT NULL UNIQUE,
     name TEXT NOT NULL,
     abbreviation TEXT,
+    summary TEXT,
     slug TEXT NOT NULL UNIQUE,
     logo_image_id TEXT,
     platform_type TEXT

@@ -8,10 +8,10 @@ export type IgdbGame = {
   first_release_date?: number;
   franchises?: { name: string; }[];
   game_engines?: { name: string, description: string }[];
-  genres?: { name: string }[];
+  genres?: { id: number }[];
   involved_companies?: IgdbInvolvedCompany[];
   name: string;
-  platforms?: IgdbPlatform[];
+  platforms?: Pick<IgdbPlatform, "id">[];
   release_dates?: IgdbReleaseDate[];
   similar_games?: IgdbSimilarGame[];
   summary?: string;
@@ -49,10 +49,13 @@ export type IgdbInvolvedCompany = {
 }
 
 export type IgdbPlatform = {
-  abbreviation: string;
+  id: number;
+  abbreviation?: string;
   name: string;
+  slug: string;
+  summary?: string;
   platform_logo?: { image_id: string };
-  platform_type: { name: string };
+  platform_type?: { name: string };
 }
 
 export type IgdbReleaseDate = {
@@ -74,4 +77,11 @@ export type IgdbWebsite = {
     id: number; 
     type: string 
   };
+}
+
+// Genre Type
+export type IgdbGenre = {
+  id: number;
+  name: string;
+  slug: string;
 }
