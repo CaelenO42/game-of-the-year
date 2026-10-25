@@ -1,6 +1,24 @@
 import type { IgdbGame } from "../igdb/types.js";
 import { pool } from "./pool.js";
 
+type GameRow = {
+  id: number;
+  igdb_id: number;
+  name: string;
+  summary: string | null;
+  cover_image_id: string | null;
+  first_release_date: Date | null;
+  igdb_rating_count: number | null;
+  igdb_data: IgdbGame;
+};
+type GenreRow = { name: string; slug: string };
+type PlatformRow = { name: string; abbreviation: string | null; slug: string };
+
+export type GameDetail = GameRow & {
+  genres: GenreRow[];
+  platforms: PlatformRow[];
+};
+
 export async function saveGame(game: IgdbGame):Promise<number> {
     const client = await pool.connect();
     try {
@@ -69,4 +87,34 @@ export async function saveGame(game: IgdbGame):Promise<number> {
     } finally {
         client.release();
     }
+}
+
+export async function getGame(id: number):Promise<GameDetail | undefined> {
+    const gameData = await pool.query<GameRow>(`
+        SELECT id, igdb_id, name, summary, cover_image_id, first_release_date, igdb_rating_count, igdb_data
+        FROM game
+        WHERE id = $1
+    `, [id]);
+
+    const game = gameData.rows[0];
+    if (!game) return;
+    
+    const [genres, platforms] = await Promise.all([
+        pool.query<GenreRow>(`
+            SELECT g.name, g.slug
+            FROM game_genre gg
+            JOIN genre g ON g.id = gg.genre_id
+            WHERE gg.game_id = $1
+            ORDER BY g.name
+        `, [id]),
+        pool.query<PlatformRow>(`
+            SELECT p.name, p.abbreviation, p.slug
+            FROM game_platform gp
+            JOIN platform p ON p.id = gp.platform_id
+            WHERE gp.game_id = $1
+            ORDER BY p.name
+        `, [id])
+    ])
+
+    return {...game, genres: genres.rows, platforms: platforms.rows};
 }
