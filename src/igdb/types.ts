@@ -34,7 +34,7 @@ export type IgdbAgeRating = {
 
 export type IgdbExternalGame = {
   uid: string;
-  external_game_source: {
+  external_game_source?: {
     id: number;
     name: string;
   }

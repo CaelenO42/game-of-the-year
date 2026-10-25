@@ -33,9 +33,15 @@ try {
                 slug = EXCLUDED.slug,
                 logo_image_id = EXCLUDED.logo_image_id,
                 platform_type = EXCLUDED.platform_type;
-        `, [platform.id, platform.name, platform.abbreviation ?? null,
-            platform.summary ?? null, platform.slug, platform.platform_logo?.image_id ?? null,
-            platform.platform_type?.name ?? null]);
+        `, [
+            platform.id, 
+            platform.name, 
+            platform.abbreviation ?? null,
+            platform.summary ?? null, 
+            platform.slug, 
+            platform.platform_logo?.image_id ?? null,
+            platform.platform_type?.name ?? null
+        ]);
     }
 
     // Commit
