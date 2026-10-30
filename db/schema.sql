@@ -1,3 +1,5 @@
+CREATE EXTENSION IF NOT EXISTS pg_trgm; 
+
 CREATE TABLE IF NOT EXISTS game (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     igdb_id INTEGER NOT NULL UNIQUE,
@@ -11,7 +13,10 @@ CREATE TABLE IF NOT EXISTS game (
     igdb_rating_count INTEGER,
     popularity DOUBLE PRECISION GENERATED ALWAYS AS (ln(1 + coalesce(igdb_rating_count, 0))) STORED
 );
+-- Lowercased title without punctuation, for exact-match ranking. Set by saveGame() via normalizeTitle() in src/db/games.ts.
+ALTER TABLE game ADD COLUMN IF NOT EXISTS name_normalized TEXT;
 CREATE INDEX IF NOT EXISTS game_popularity_idx ON game (popularity DESC);
+CREATE INDEX IF NOT EXISTS game_name_trgm_idx ON game USING gin (name gin_trgm_ops);
 
 CREATE TABLE IF NOT EXISTS platform (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

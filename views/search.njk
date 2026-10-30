@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>Results for "{{ query }}"</h1>
+    <p>Displaying {{ results.length }} of {{ total }} results</p>
+    {% for game in results %}
+    <a href="/game/{{ game.id }}">
+        <p>{{ game.name }}</p>
+        <p>{{ game.summary }}</p>
+        <p>{{ game.total_review_count }}</p>
+        <img src="https://images.igdb.com/igdb/image/upload/t_cover_big/{{ game.cover_image_id }}.jpg">
+    </a>
+    {% endfor %}
+</body>
+
+</html>

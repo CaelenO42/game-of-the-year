@@ -14,6 +14,10 @@ type GameRow = {
 type GenreRow = { name: string; slug: string };
 type PlatformRow = { name: string; abbreviation: string | null; slug: string };
 
+export type GameSearchResult = Pick<GameRow, "id" | "name" | "cover_image_id" | "first_release_date"> & {
+  popularity: number;
+};
+
 export type GameDetail = GameRow & {
   genres: GenreRow[];
   platforms: PlatformRow[];
@@ -27,10 +31,11 @@ export async function saveGame(game: IgdbGame):Promise<number> {
 
         // Game Table
         const { rows } = await client.query<{ id: number }>(`
-            INSERT INTO game (igdb_id, name, summary, cover_image_id, first_release_date, igdb_data, igdb_rating_count, last_synced_at)
-            VALUES ($1, $2, $3, $4, (to_timestamp($5) AT TIME ZONE 'UTC')::date, $6, $7, NOW())
+            INSERT INTO game (igdb_id, name, summary, cover_image_id, first_release_date, igdb_data, igdb_rating_count, name_normalized, last_synced_at)
+            VALUES ($1, $2, $3, $4, (to_timestamp($5) AT TIME ZONE 'UTC')::date, $6, $7, $8, NOW())
             ON CONFLICT (igdb_id) DO UPDATE
             SET name = EXCLUDED.name,
+                name_normalized = EXCLUDED.name_normalized,
                 summary = EXCLUDED.summary,
                 cover_image_id = EXCLUDED.cover_image_id,
                 first_release_date = EXCLUDED.first_release_date,
@@ -46,6 +51,7 @@ export async function saveGame(game: IgdbGame):Promise<number> {
             game.first_release_date ?? null,
             JSON.stringify(game),
             game.total_rating_count ?? null,
+            normalizeTitle(game.name),
         ]);
         const gameId = rows[0]!.id;
 
@@ -117,4 +123,41 @@ export async function getGame(id: number):Promise<GameDetail | undefined> {
     ])
 
     return {...game, genres: genres.rows, platforms: platforms.rows};
+}
+
+export function sqlEscape(s: string):string | undefined {
+    if (typeof s !== "string") return;
+    return s.replaceAll(/([\\_%])/g, "\\$1");
+}
+
+// Stored in game.name_normalized by saveGame; the search query is normalized the same way.
+export function normalizeTitle(s: string): string {
+    return s.toLowerCase().replaceAll(/[^\p{L}\p{N}\s]/gu, "");
+}
+
+export type GameSearchPage = {
+    results: GameSearchResult[];
+    total: number;
+};
+type GameSearchRow = GameSearchResult & { total: string };
+
+export async function searchGames(query: string, offset: number = 0, limit: number = 20):Promise<GameSearchPage> {
+    query = query.slice(0, 99).trim();
+    if (query.length === 0) return { results: [], total: 0 };
+    const gameData = await pool.query<GameSearchRow>(`
+        SELECT id, name, cover_image_id, first_release_date, popularity, count(*) OVER() AS total
+        FROM game
+        WHERE name ILIKE '%' || $1 || '%'
+        OR $2 <% name
+        ORDER BY
+            name_normalized = $3 DESC,
+            word_similarity($2, name) DESC,
+            popularity DESC,
+            name,
+            id
+        LIMIT $4
+        OFFSET $5;
+    `, [sqlEscape(query), query, normalizeTitle(query), limit, offset]);
+
+    return { results: gameData.rows, total: Number(gameData.rows[0]?.total ?? 0) };
 }

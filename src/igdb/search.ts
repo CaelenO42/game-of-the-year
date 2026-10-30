@@ -56,7 +56,9 @@ const GAME_FIELDS = [
 ];
 
 export async function searchIgdb(game: string) {
-    const body: string = `search "${game}"; fields ${GAME_FIELDS.join(", ")}; where game_type = (0, 8, 9); limit 20;`
+    const escaped = game.replaceAll(/["\\]/g, "\\$&");
+
+    const body: string = `search "${escaped}"; fields ${GAME_FIELDS.join(", ")}; where game_type = (0, 8, 9); limit 20;`
 
     return await queryIgdb<IgdbGame>("games", body);
 }
