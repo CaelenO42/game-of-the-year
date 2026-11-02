@@ -10,5 +10,17 @@
     <p>{{ game.summary }}</p>
     <p>{{ game.total_review_count }}</p>
     <img src="https://images.igdb.com/igdb/image/upload/t_cover_big/{{ game.cover_image_id }}.jpg">
+    {% if steam and steam.data %}
+      <h3>Steam Info</h3>
+      <p>Total Reviews: {{ steam.steam_reviews_total }}</p>
+      <p>Positive Reviews: {{ steam.steam_reviews_positive }}</p>
+      <p>Review Percentage: {{ (steam.steam_reviews_positive / steam.steam_reviews_total) * 100 }}</p>
+      {% if steam.data.is_free %}
+      <p>This game is free</p>
+      {% endif %}
+      {% if steam.data.metacritic %}
+      <p>Metascore: {{ steam.data.metacritic.score }}</p>
+      {% endif %}
+    {% endif %}
   </body>
 </html>

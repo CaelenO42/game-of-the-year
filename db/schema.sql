@@ -4,19 +4,32 @@ CREATE TABLE IF NOT EXISTS game (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     igdb_id INTEGER NOT NULL UNIQUE,
     name TEXT NOT NULL,
+    name_normalized TEXT,
     summary TEXT,
     cover_image_id TEXT,
     first_release_date DATE,
     igdb_data JSONB,
-    last_synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     igdb_rating_count INTEGER,
-    popularity DOUBLE PRECISION GENERATED ALWAYS AS (ln(1 + coalesce(igdb_rating_count, 0))) STORED
+    igdb_aggregated_rating DOUBLE PRECISION,
+    igdb_aggregated_rating_count INTEGER,
+    popularity DOUBLE PRECISION GENERATED ALWAYS AS (ln(1 + coalesce(igdb_rating_count, 0))) STORED,
+    last_synced_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
--- Lowercased title without punctuation, for exact-match ranking. Set by saveGame() via normalizeTitle() in src/db/games.ts.
-ALTER TABLE game ADD COLUMN IF NOT EXISTS name_normalized TEXT;
+
 CREATE INDEX IF NOT EXISTS game_popularity_idx ON game (popularity DESC);
 CREATE INDEX IF NOT EXISTS game_name_trgm_idx ON game USING gin (name gin_trgm_ops);
+
+CREATE TABLE IF NOT EXISTS game_steam (
+    game_id INTEGER PRIMARY KEY REFERENCES game(id) ON DELETE CASCADE,
+    steam_app_id INTEGER NOT NULL,
+    data JSONB,
+    metacritic_score INTEGER,
+    fetched_at TIMESTAMPTZ,
+    steam_reviews_positive INTEGER,
+    steam_reviews_total INTEGER,
+    reviews_fetched_at TIMESTAMPTZ
+);
 
 CREATE TABLE IF NOT EXISTS platform (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,

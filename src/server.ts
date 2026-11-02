@@ -3,6 +3,7 @@ import nunjucks from 'nunjucks';
 import { getGame } from './db/games.js';
 import { slugify } from './slug.js';
 import { PAGE_SIZE, searchWithFallback } from './services/gameSearch.js';
+import { getSteamData } from './services/steamData.js';
 
 const app = express();
 const PORT = 3000;
@@ -32,7 +33,12 @@ app.get('/game/:idslug', async (req, res) => {
     const path = `/game/${game.id}-${slugify(game.name)}`;
     if (req.path !== path) return res.redirect(301, path);
 
-    return res.render('game', { game });
+    const steam = await getSteamData(game.id).catch((err) => {
+        console.error(`Steam data failed for game ${game.id}:`, err);
+        return null;
+    });
+
+    return res.render('game', { game, steam });
 })
 
 app.get('/search', async (req, res) => {

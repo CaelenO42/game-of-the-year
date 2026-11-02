@@ -9,6 +9,8 @@ type GameRow = {
   cover_image_id: string | null;
   first_release_date: Date | null;
   igdb_rating_count: number | null;
+  igdb_aggregated_rating: number | null;
+  igdb_aggregated_rating_count: number | null;
   igdb_data: IgdbGame;
 };
 type GenreRow = { name: string; slug: string };
@@ -31,8 +33,8 @@ export async function saveGame(game: IgdbGame):Promise<number> {
 
         // Game Table
         const { rows } = await client.query<{ id: number }>(`
-            INSERT INTO game (igdb_id, name, summary, cover_image_id, first_release_date, igdb_data, igdb_rating_count, name_normalized, last_synced_at)
-            VALUES ($1, $2, $3, $4, (to_timestamp($5) AT TIME ZONE 'UTC')::date, $6, $7, $8, NOW())
+            INSERT INTO game (igdb_id, name, summary, cover_image_id, first_release_date, igdb_data, igdb_rating_count, igdb_aggregated_rating, igdb_aggregated_rating_count, name_normalized, last_synced_at)
+            VALUES ($1, $2, $3, $4, (to_timestamp($5) AT TIME ZONE 'UTC')::date, $6, $7, $8, $9, $10, NOW())
             ON CONFLICT (igdb_id) DO UPDATE
             SET name = EXCLUDED.name,
                 name_normalized = EXCLUDED.name_normalized,
@@ -41,6 +43,8 @@ export async function saveGame(game: IgdbGame):Promise<number> {
                 first_release_date = EXCLUDED.first_release_date,
                 igdb_data = EXCLUDED.igdb_data,
                 igdb_rating_count = EXCLUDED.igdb_rating_count,
+                igdb_aggregated_rating = EXCLUDED.igdb_aggregated_rating,
+                igdb_aggregated_rating_count = EXCLUDED.igdb_aggregated_rating_count,
                 last_synced_at = NOW()
             RETURNING id;
         `, [
@@ -51,6 +55,8 @@ export async function saveGame(game: IgdbGame):Promise<number> {
             game.first_release_date ?? null,
             JSON.stringify(game),
             game.total_rating_count ?? null,
+            game.aggregated_rating ?? null,
+            game.aggregated_rating_count ?? null,
             normalizeTitle(game.name),
         ]);
         const gameId = rows[0]!.id;
@@ -97,7 +103,7 @@ export async function saveGame(game: IgdbGame):Promise<number> {
 
 export async function getGame(id: number):Promise<GameDetail | undefined> {
     const gameData = await pool.query<GameRow>(`
-        SELECT id, igdb_id, name, summary, cover_image_id, first_release_date, igdb_rating_count, igdb_data
+        SELECT id, igdb_id, name, summary, cover_image_id, first_release_date, igdb_rating_count, igdb_aggregated_rating, igdb_aggregated_rating_count, igdb_data
         FROM game
         WHERE id = $1
     `, [id]);
