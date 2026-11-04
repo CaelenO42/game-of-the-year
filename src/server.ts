@@ -4,11 +4,15 @@ import { getGame } from './db/games.js';
 import { slugify } from './slug.js';
 import { PAGE_SIZE, searchWithFallback } from './services/gameSearch.js';
 import { getSteamData } from './services/steamData.js';
+import { getTwitchData } from './services/twitchData.js';
+import { checkDb } from './db/pool.js';
 
 const app = express();
 const PORT = 3000;
 
 const MAX_PAGE = 500;
+
+await checkDb();
 
 nunjucks.configure('views', {
     autoescape: true,
@@ -33,12 +37,15 @@ app.get('/game/:idslug', async (req, res) => {
     const path = `/game/${game.id}-${slugify(game.name)}`;
     if (req.path !== path) return res.redirect(301, path);
 
-    const steam = await getSteamData(game.id).catch((err) => {
-        console.error(`Steam data failed for game ${game.id}:`, err);
-        return null;
-    });
+    const [steam, twitch] = await Promise.all([
+        getSteamData(game.id).catch((err) => {
+            console.error(`Steam data failed for game ${game.id}:`, err);
+            return null;
+        }),
+        getTwitchData(game.id)
+    ])
 
-    return res.render('game', { game, steam });
+    return res.render('game', { game, steam, twitch });
 })
 
 app.get('/search', async (req, res) => {

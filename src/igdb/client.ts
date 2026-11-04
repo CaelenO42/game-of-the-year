@@ -1,14 +1,14 @@
 import { requireEnv } from "../env.js";
 
-const IGDB_CLIENT_ID = requireEnv("IGDB_CLIENT_ID");
-const IGDB_TOKEN = requireEnv("IGDB_TOKEN");
+const TWITCH_CLIENT_ID = requireEnv("TWITCH_CLIENT_ID");
+const TWITCH_TOKEN = requireEnv("TWITCH_TOKEN");
 
 export async function queryIgdb<T>(endpoint: string, body: string): Promise<T[]> {
     const res = await fetch(`https://api.igdb.com/v4/${endpoint}`, {
         method: "POST",
         headers: {
-            "Client-ID": IGDB_CLIENT_ID,
-            "Authorization": `Bearer ${IGDB_TOKEN}`
+            "Client-ID": TWITCH_CLIENT_ID,
+            "Authorization": `Bearer ${TWITCH_TOKEN}`
         },
         body
     });
