@@ -1,3 +1,4 @@
+import consola from "consola";
 import { twitchStreams } from "../twitch/streams.js";
 import type { TwitchData, TwitchStream } from "../twitch/types.js";
 
@@ -17,7 +18,7 @@ export async function getTwitchData(gameId: number): Promise<TwitchData | null> 
         updateCache(gameId, data);
         return data;
     } catch (err) {
-        console.error(`Error getting twitch data for GID ${gameId}:`, err);
+        consola.error(`Error getting twitch data for GID ${gameId}:`, err);
         if (entry) return entry.data;
         return null;
     }

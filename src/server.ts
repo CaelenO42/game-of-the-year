@@ -6,6 +6,7 @@ import { PAGE_SIZE, searchWithFallback } from './services/gameSearch.js';
 import { getSteamData } from './services/steamData.js';
 import { getTwitchData } from './services/twitchData.js';
 import { checkDb } from './db/pool.js';
+import consola from 'consola';
 
 const app = express();
 const PORT = 3000;
@@ -39,7 +40,7 @@ app.get('/game/:idslug', async (req, res) => {
 
     const [steam, twitch] = await Promise.all([
         getSteamData(game.id).catch((err) => {
-            console.error(`Steam data failed for game ${game.id}:`, err);
+            consola.error(`Steam data failed for game ${game.id}:`, err);
             return null;
         }),
         getTwitchData(game.id)
@@ -62,7 +63,7 @@ app.get('/search', async (req, res) => {
 })
 
 app.listen(PORT, () => {
-    console.log(`Server running at http://localhost:${PORT}/`);
+    consola.info(`Server running at http://localhost:${PORT}/`);
 });
 
 function normalizePage(value: unknown): number {

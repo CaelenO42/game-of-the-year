@@ -1,3 +1,4 @@
+import consola from "consola";
 import { getSteamAppId, getSteamRow, saveSteamDetails, saveSteamReviews, type SteamRow } from "../db/steam.js";
 import { steamAppDetails } from "../steam/appDetails.js";
 import { steamReviewSummary } from "../steam/userReviews.js";
@@ -36,6 +37,6 @@ async function refreshReviews(gameId: number, steamAppId: number) {
 
 function logFailure(what: string, gameId: number, steamAppId: number, result: PromiseSettledResult<unknown>) {
     if (result.status === "rejected") {
-        console.error(`Steam ${what} failed for game ${gameId} (Steam ID ${steamAppId}):`, result.reason);
+        consola.error(`Steam ${what} failed for game ${gameId} (Steam ID ${steamAppId}):`, result.reason);
     }
 }

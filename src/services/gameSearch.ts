@@ -1,3 +1,4 @@
+import consola from "consola";
 import { saveGame, searchGames, type GameSearchPage } from "../db/games.js";
 import { searchIgdb } from "../igdb/search.js";
 
@@ -29,7 +30,7 @@ export async function searchWithFallback(query: string, page: number):Promise<Ga
 
         await Promise.all(igdbSearch.map(game => saveGame(game)));
     } catch (err) {
-        console.error("Search returned an error:", err);
+        consola.error("Search returned an error:", err);
         return dbSearch;
     }
 
