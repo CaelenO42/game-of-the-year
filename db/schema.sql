@@ -1,5 +1,8 @@
 CREATE EXTENSION IF NOT EXISTS pg_trgm; 
 
+-- ┌───────────────────────┐
+-- │      Game Tables      │
+-- └───────────────────────┘
 CREATE TABLE IF NOT EXISTS game (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     igdb_id INTEGER NOT NULL UNIQUE,
@@ -70,3 +73,15 @@ CREATE TABLE IF NOT EXISTS game_external_id (
     PRIMARY KEY (source, uid)
 );
 CREATE INDEX IF NOT EXISTS game_external_id_game_id_idx ON game_external_id (game_id);
+
+-- ┌───────────────────────┐
+-- │      User Tables      │
+-- └───────────────────────┘
+CREATE TABLE IF NOT EXISTS app_user (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    firebase_uid TEXT NOT NULL UNIQUE,
+    username TEXT,
+    profile_picture TEXT,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE UNIQUE INDEX IF NOT EXISTS app_user_username_lower_idx ON app_user (lower(username));

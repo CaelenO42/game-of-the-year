@@ -7,6 +7,8 @@ import { getSteamData } from './services/steamData.js';
 import { getTwitchData } from './services/twitchData.js';
 import { checkDb } from './db/pool.js';
 import consola from 'consola';
+import { adminAuth } from './firebase/admin.js';
+import { upsertUser } from './db/users.js';
 
 const app = express();
 const PORT = 3000;
@@ -15,6 +17,8 @@ const MAX_PAGE = 500;
 
 await checkDb();
 
+app.use(express.json());
+app.use(express.static("public"))
 nunjucks.configure('views', {
     autoescape: true,
     express: app,
@@ -61,6 +65,55 @@ app.get('/search', async (req, res) => {
         totalPages: Math.ceil(total / PAGE_SIZE)
     });
 })
+
+// Auth Rotes
+const TOKEN_AGE = 5 * 60; // 5 Minutes (sec)
+const SESSION_EXPIRATION = 14 * 24 * 60 * 60 * 1000; // 14 days (ms)
+const SESSION_COOKIE_NAME = "session";
+
+// Auth Routes
+app.get('/login', (req, res) => {
+    res.render('login');
+})
+
+app.get('/signup', (req, res) => {
+    res.render('signup');
+})
+
+app.post('/auth/session', async (req, res) => {
+    const idToken = req.body?.idToken;
+    if (typeof idToken !== "string") return res.status(400).json({ error: "Missing idToken" });
+
+    let uid: string;
+    let session: string;
+    try {
+        const token = await adminAuth.verifyIdToken(idToken);
+
+        const currentTime = Date.now() / 1000;
+        if (currentTime - token.auth_time > TOKEN_AGE) return res.status(401).json({ error: "Recent sign-in required" });
+
+        uid = token.uid;
+        session = await adminAuth.createSessionCookie(idToken, { expiresIn: SESSION_EXPIRATION });
+    } catch (err) {
+        consola.error(err);
+        return res.status(401).json({ error: "Invalid token" });
+    }
+
+    try {
+        const user = await upsertUser(uid);
+
+        res.cookie("session", session, { 
+            maxAge: SESSION_EXPIRATION, 
+            httpOnly: true, 
+            secure: process.env.NODE_ENV === "production",
+            sameSite: "lax"
+        });
+        return res.json({ redirect: user.username === null ? "/onboarding" : "/" });
+    } catch (err) {
+        consola.error(err);
+        return res.status(500).json({ error: "Could not load account" });
+    }
+});
 
 app.listen(PORT, () => {
     consola.info(`Server running at http://localhost:${PORT}/`);

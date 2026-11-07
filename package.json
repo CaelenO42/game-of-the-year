@@ -1,32 +1,37 @@
 {
-  "name": "game-of-the-year",
-  "version": "1.0.0",
-  "description": "A website allowing users to find and rate games",
-  "main": "server.js",
-  "scripts": {
-    "start": "node --env-file=.env dist/server.js",
-    "typecheck": "tsc --noEmit",
-    "build": "tsc",
-    "dev": "tsx watch --env-file=.env src/server.ts",
-    "db:init": "tsx --env-file=.env src/db/init.ts",
-    "db:seed": "tsx --env-file=.env src/db/seed.ts"
-  },
-  "keywords": [],
-  "author": "CaelenO42",
-  "license": "ARR",
-  "type": "module",
-  "dependencies": {
-    "consola": "^3.4.2",
-    "express": "^5.3.0",
-    "nunjucks": "^3.2.4",
-    "pg": "^8.23.1"
-  },
-  "devDependencies": {
-    "@types/express": "^5.0.6",
-    "@types/node": "^26.6.5",
-    "@types/nunjucks": "^3.2.6",
-    "@types/pg": "^8.23.1",
-    "tsx": "^4.23.15",
-    "typescript": "^7.0.2"
-  }
+    "name": "game-of-the-year",
+    "version": "1.0.0",
+    "description": "A website allowing users to find and rate games",
+    "main": "server.js",
+    "scripts": {
+        "start": "node --env-file=.env dist/server.js",
+        "typecheck": "tsc --noEmit && tsc -p client/tsconfig.json --noEmit",
+        "build": "tsc && npm run build:client",
+        "dev": "tsx watch --env-file=.env src/server.ts",
+        "db:init": "tsx --env-file=.env src/db/init.ts",
+        "db:seed": "tsx --env-file=.env src/db/seed.ts",
+        "build:client": "esbuild client/pages/*.ts --bundle --format=esm --outdir=public/js --outbase=client/pages",
+        "dev:client": "esbuild client/pages/*.ts --bundle --format=esm --outdir=public/js --outbase=client/pages --watch"
+    },
+    "keywords": [],
+    "author": "CaelenO42",
+    "license": "ARR",
+    "type": "module",
+    "dependencies": {
+        "consola": "^3.4.2",
+        "express": "^5.3.0",
+        "firebase-admin": "^14.5.0",
+        "nunjucks": "^3.2.4",
+        "pg": "^8.23.1"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@types/node": "^26.6.5",
+        "@types/nunjucks": "^3.2.6",
+        "@types/pg": "^8.23.1",
+        "esbuild": "^0.28.2",
+        "firebase": "^13.2.0",
+        "tsx": "^4.23.15",
+        "typescript": "^7.0.2"
+    }
 }
