@@ -1,4 +1,4 @@
-import { Pool } from "pg";
+import { Pool, type PoolClient } from "pg";
 import { requireEnv } from "../env.js";
 import consola from "consola";
 
@@ -14,5 +14,20 @@ export async function checkDb() {
         if (code === "ECONNREFUSED") consola.error("Cannot connect to Postgres DB. Try running docker compose up -d");
         else consola.error("Postgres check failed:", err);
         process.exit(1);
+    }
+}
+
+export async function withTransaction<T>(fn: (client: PoolClient) => Promise<T>): Promise<T> {
+    const client = await pool.connect();
+    try {
+        await client.query("BEGIN");
+        const result = await fn(client);
+        await client.query("COMMIT");
+        return result;
+    } catch (err) {
+        await client.query("ROLLBACK");
+        throw err;
+    } finally {
+        client.release();
     }
 }
