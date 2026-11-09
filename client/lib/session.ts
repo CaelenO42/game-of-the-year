@@ -7,10 +7,12 @@ export type SessionResult =
 export async function createSession(user: User): Promise<SessionResult> {
     const idToken = await getIdToken(user);
 
+    const next = new URLSearchParams(window.location.search).get("next");
+
     const res = await fetch("/auth/session", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ idToken }),
+        body: JSON.stringify({ idToken, next }),
     });
 
     const data = await res.json();

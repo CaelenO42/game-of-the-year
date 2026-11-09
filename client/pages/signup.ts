@@ -23,9 +23,11 @@ let latestCheck = 0;
 async function verifyPassword(): Promise<boolean> {
     const id = ++latestCheck;
     const { requirements, recommendations } = await checkPassword(passwordField.value);
-    if (id !== latestCheck) return requirements.length === 0;
 
-    passwordField.setCustomValidity(requirements[0]?.label ?? "");
+    const unmet = requirements.filter((r) => !r.met);
+
+    if (id !== latestCheck) return unmet.length === 0;
+    passwordField.setCustomValidity(unmet[0]?.label ?? "");
 
     // Show every problem at once: required fixes first, then optional tips.
     const items = [
@@ -39,7 +41,7 @@ async function verifyPassword(): Promise<boolean> {
     });
 
     passwordHint.replaceChildren(...items);
-    return requirements.length === 0;
+    return unmet.length === 0;
 }
 
 function verifyMatch(): boolean {

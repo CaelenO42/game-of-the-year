@@ -8144,10 +8144,11 @@ function firebaseErrorMessage(err) {
 // client/lib/session.ts
 async function createSession(user) {
   const idToken = await getIdToken(user);
+  const next = new URLSearchParams(window.location.search).get("next");
   const res = await fetch("/auth/session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ idToken })
+    body: JSON.stringify({ idToken, next })
   });
   const data = await res.json();
   if (!res.ok) return { ok: false, error: data.error ?? "Something went wrong." };
@@ -8208,8 +8209,9 @@ var latestCheck = 0;
 async function verifyPassword() {
   const id = ++latestCheck;
   const { requirements, recommendations } = await checkPassword(passwordField.value);
-  if (id !== latestCheck) return requirements.length === 0;
-  passwordField.setCustomValidity(requirements[0]?.label ?? "");
+  const unmet = requirements.filter((r) => !r.met);
+  if (id !== latestCheck) return unmet.length === 0;
+  passwordField.setCustomValidity(unmet[0]?.label ?? "");
   const items = [
     ...requirements.map((rule) => ({ rule, className: "error" })),
     ...recommendations.map((rule) => ({ rule, className: "suggestion" }))
@@ -8220,7 +8222,7 @@ async function verifyPassword() {
     return li;
   });
   passwordHint.replaceChildren(...items);
-  return requirements.length === 0;
+  return unmet.length === 0;
 }
 function verifyMatch() {
   const matches = passwordField.value === confirmPasswordField.value;
