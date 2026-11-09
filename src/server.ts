@@ -1,4 +1,4 @@
-import express from 'express';
+import express, { type NextFunction, type Request, type Response } from 'express';
 import nunjucks from 'nunjucks';
 import { getGame } from './db/games.js';
 import { slugify } from './slug.js';
@@ -8,17 +8,25 @@ import { getTwitchData } from './services/twitchData.js';
 import { checkDb } from './db/pool.js';
 import consola from 'consola';
 import { adminAuth } from './firebase/admin.js';
-import { upsertUser } from './db/users.js';
+import { getUserByFirebaseUid, setUsername, upsertUser } from './db/users.js';
+import cookieParser from "cookie-parser";
+import { validateUsername, USERNAME_MAX, USERNAME_MIN } from './username.js';
 
 const app = express();
 const PORT = 3000;
 
 const MAX_PAGE = 500;
 
+const SESSION_COOKIE_NAME = "session";
+
 await checkDb();
 
 app.use(express.json());
-app.use(express.static("public"))
+app.use(express.static("public"));
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: false }))
+app.use(loadUser);
+app.use(enforceOnboarding);
 nunjucks.configure('views', {
     autoescape: true,
     express: app,
@@ -26,7 +34,41 @@ nunjucks.configure('views', {
 });
 app.set("view engine", "njk");
 
+// Middleware
+async function loadUser(req: Request, res: Response, next: NextFunction) {
+    const sessionCookie = req.cookies[SESSION_COOKIE_NAME];
+    if (typeof sessionCookie !== 'string') return next();
 
+    let uid: string;
+    try {
+        uid = (await adminAuth.verifySessionCookie(sessionCookie)).uid;
+    } catch (err) {
+        return next();
+    }
+
+    const user = await getUserByFirebaseUid(uid);
+    req.user = user ?? undefined;
+    res.locals.user = req.user;
+    next();
+}
+
+function requireAuth(req: Request, res: Response, next: NextFunction) {
+    if (req.user) return next();
+    if (req.method !== "GET") return res.redirect("/login");
+    return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
+}
+
+const ONBOARDING_ALLOWED = ["/onboarding", "/auth"];
+
+function enforceOnboarding(req: Request, res: Response, next: NextFunction) {
+    if (!req.user || req.user.username) return next();
+
+    const allowed = ONBOARDING_ALLOWED.some((p) => req.path === p || req.path.startsWith(`${p}/`));
+    if (allowed) return next();
+
+    if (req.method !== "GET") return res.status(403).json({ error: "Choose a username first" });
+    return res.redirect(`/onboarding?next=${encodeURIComponent(req.originalUrl)}`);
+}
 
 app.get('/', (req, res) => {
     res.render('home');
@@ -69,15 +111,51 @@ app.get('/search', async (req, res) => {
 // Auth Rotes
 const TOKEN_AGE = 5 * 60; // 5 Minutes (sec)
 const SESSION_EXPIRATION = 14 * 24 * 60 * 60 * 1000; // 14 days (ms)
-const SESSION_COOKIE_NAME = "session";
 
 // Auth Routes
 app.get('/login', (req, res) => {
-    res.render('login');
+    if (req.user) return res.redirect(safeNext(req.query.next));
+    res.render('login', { next: safeNext(req.query.next) });
 })
 
 app.get('/signup', (req, res) => {
-    res.render('signup');
+    if (req.user) return res.redirect(safeNext(req.query.next));
+    res.render('signup', { next: safeNext(req.query.next) });
+})
+
+function renderOnboarding(res: Response, status: number, next: string, error?: string, username?: string) {
+    return res.status(status).render('onboarding', { 
+        error, 
+        next: safeNext(next),
+        usernameMin: USERNAME_MIN,
+        usernameMax: USERNAME_MAX,
+        username
+     });
+}
+
+app.get('/onboarding', requireAuth, (req, res) => {
+    if (req.user?.username) return res.redirect(safeNext(req.query.next));
+    return renderOnboarding(res, 200, safeNext(req.query.next));
+})
+
+app.post('/onboarding', requireAuth, async (req, res) => {
+    if (!req.user) return res.redirect('/login');
+    if (req.user.username) return res.redirect(safeNext(req.body?.next));
+
+    const next = safeNext(req.body?.next);
+    const result = validateUsername(req.body?.username);
+    if (!result.ok) return renderOnboarding(res, 400, next, result.error, result.username);
+
+    const setResult = await setUsername(req.user.id, result.username);
+    if (setResult.ok) return res.redirect(next);
+
+    switch (setResult.reason) {
+        case 'taken':    return renderOnboarding(res, 409, next, 'That username is taken.');
+        case 'reserved': return renderOnboarding(res, 409, next, 'That username was recently used and is currently unavailable.');
+        case 'cooldown': return renderOnboarding(res, 429, next, `You can change your username again on ${setResult.availableAt.toLocaleDateString()}.`);
+        case 'no_user':  return res.redirect('/login');
+        default:         return renderOnboarding(res, 400, next, 'Invalid username.');
+    }
 })
 
 app.post('/auth/session', async (req, res) => {
@@ -108,7 +186,10 @@ app.post('/auth/session', async (req, res) => {
             secure: process.env.NODE_ENV === "production",
             sameSite: "lax"
         });
-        return res.json({ redirect: user.username === null ? "/onboarding" : "/" });
+        const next = safeNext(req.body?.next);
+        return res.json({
+            redirect: user.username === null ? `/onboarding?next=${encodeURIComponent(next)}` : next
+        });
     } catch (err) {
         consola.error(err);
         return res.status(500).json({ error: "Could not load account" });
@@ -118,6 +199,13 @@ app.post('/auth/session', async (req, res) => {
 app.listen(PORT, () => {
     consola.info(`Server running at http://localhost:${PORT}/`);
 });
+
+// Only allow same-site paths to avoid open redirects
+function safeNext(value: unknown): string {
+    if (typeof value !== "string") return "/";
+    if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return "/";
+    return value;
+}
 
 function normalizePage(value: unknown): number {
     const page = Math.floor(Number(value));

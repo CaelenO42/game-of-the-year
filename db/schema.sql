@@ -80,8 +80,16 @@ CREATE INDEX IF NOT EXISTS game_external_id_game_id_idx ON game_external_id (gam
 CREATE TABLE IF NOT EXISTS app_user (
     id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     firebase_uid TEXT NOT NULL UNIQUE,
-    username TEXT,
+    username TEXT UNIQUE CONSTRAINT app_user_username_lowercase CHECK (username = lower(username)),
+    display_name TEXT,
     profile_picture TEXT,
+    username_changed_at TIMESTAMPTZ,
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
-CREATE UNIQUE INDEX IF NOT EXISTS app_user_username_lower_idx ON app_user (lower(username));
+
+CREATE TABLE IF NOT EXISTS username_reservation (
+    username TEXT PRIMARY KEY CHECK (username = lower(username)),
+    user_id INTEGER NOT NULL REFERENCES app_user (id) ON DELETE CASCADE,
+    expires_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS username_reservation_user_id_idx ON username_reservation (user_id);

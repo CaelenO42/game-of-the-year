@@ -9,6 +9,11 @@
 
 <body>
   <h1>Welcome to Game of the Year!</h1>
+  {% if user %}
+    <p>You are logged in as {{ user.username }}</p>
+  {% else %}
+    <a href="/login">Log in</a>
+  {% endif %}
   <form action="/search" method="get">
     <input type="search" name="q" placeholder="Search for a game...">
   </form>

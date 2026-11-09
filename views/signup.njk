@@ -10,6 +10,7 @@
 
 <body>
     <h1>Sign Up</h1>
+    <p>Already have an account? <a href="/login{% if next != '/' %}?next={{ next | urlencode }}{% endif %}">Log in</a></p>
     <form id="form">
         <input id="email" type="email" autocomplete="email" required>
         <input id="password" type="password" autocomplete="new-password" required>

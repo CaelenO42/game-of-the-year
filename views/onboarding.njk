@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+</head>
+
+<body>
+    <h1>One more step</h1>
+    <p>Choose your username</p>
+    <form method="post" action="/onboarding">
+        <input id="username" name="username" type="text" placeholder="Username" autocomplete="username"
+            minlength="{{ usernameMin }}" maxlength="{{ usernameMax }}" value="{{ username }}"
+            autocapitalize="off" autocorrect="off" required>
+        <input id="next" name="next" type="hidden" value="{{ next }}">
+        <button type="submit">Submit</button>
+    </form>
+    {% if error %}
+    <p>{{ error }}</p>
+    {% endif %}
+</body>
+
+</html>
