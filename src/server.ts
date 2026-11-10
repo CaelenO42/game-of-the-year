@@ -219,6 +219,14 @@ app.use((req, res) => {
     res.status(404).render('404');
 });
 
+// 500 Error catch all
+app.use((err: unknown, req: Request, res: Response, next: NextFunction) => {
+    consola.error(err);
+    if (res.headersSent) return next(err);
+    res.status(500).render('500'); 
+});
+
+
 app.listen(PORT, () => {
     consola.info(`Server running at http://localhost:${PORT}/`);
 });
