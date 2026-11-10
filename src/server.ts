@@ -214,6 +214,11 @@ app.post('/auth/session', async (req, res) => {
     }
 });
 
+// 404 Catch all
+app.use((req, res) => {
+    res.status(404).render('404');
+});
+
 app.listen(PORT, () => {
     consola.info(`Server running at http://localhost:${PORT}/`);
 });
