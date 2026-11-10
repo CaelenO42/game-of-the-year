@@ -11,6 +11,7 @@ import { adminAuth } from './firebase/admin.js';
 import { getUserByFirebaseUid, setUsername, upsertUser } from './db/users.js';
 import cookieParser from "cookie-parser";
 import { validateUsername, USERNAME_MAX, USERNAME_MIN } from './username.js';
+import { safeNext } from './redirect.js';
 
 const app = express();
 const PORT = 3000;
@@ -199,13 +200,6 @@ app.post('/auth/session', async (req, res) => {
 app.listen(PORT, () => {
     consola.info(`Server running at http://localhost:${PORT}/`);
 });
-
-// Only allow same-site paths to avoid open redirects
-function safeNext(value: unknown): string {
-    if (typeof value !== "string") return "/";
-    if (!value.startsWith("/") || value.startsWith("//") || value.startsWith("/\\")) return "/";
-    return value;
-}
 
 function normalizePage(value: unknown): number {
     const page = Math.floor(Number(value));

@@ -11,7 +11,9 @@
         "db:init": "tsx --env-file=.env src/db/init.ts",
         "db:seed": "tsx --env-file=.env src/db/seed.ts",
         "build:client": "esbuild client/pages/*.ts --bundle --format=esm --outdir=public/js --outbase=client/pages",
-        "dev:client": "esbuild client/pages/*.ts --bundle --format=esm --outdir=public/js --outbase=client/pages --watch"
+        "dev:client": "esbuild client/pages/*.ts --bundle --format=esm --outdir=public/js --outbase=client/pages --watch",
+        "test": "vitest run",
+        "test:watch": "vitest"
     },
     "keywords": [],
     "author": "CaelenO42",
@@ -34,6 +36,7 @@
         "esbuild": "^0.28.2",
         "firebase": "^13.2.0",
         "tsx": "^4.23.15",
-        "typescript": "^7.0.2"
+        "typescript": "^7.0.2",
+        "vitest": "^5.1.0"
     }
 }
