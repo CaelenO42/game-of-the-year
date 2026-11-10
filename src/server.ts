@@ -8,10 +8,11 @@ import { getTwitchData } from './services/twitchData.js';
 import { checkDb } from './db/pool.js';
 import consola from 'consola';
 import { adminAuth } from './firebase/admin.js';
-import { getUserByFirebaseUid, setUsername, upsertUser } from './db/users.js';
+import { getUserByFirebaseUid, getUserByUsername, setUsername, upsertUser } from './db/users.js';
 import cookieParser from "cookie-parser";
 import { validateUsername, USERNAME_MAX, USERNAME_MIN } from './username.js';
 import { safeNext } from './redirect.js';
+import { timeAgo } from './date.js';
 
 const app = express();
 const PORT = 3000;
@@ -28,11 +29,15 @@ app.use(cookieParser());
 app.use(express.urlencoded({ extended: false }))
 app.use(loadUser);
 app.use(enforceOnboarding);
-nunjucks.configure('views', {
+
+const njk = nunjucks.configure('views', {
     autoescape: true,
     express: app,
     noCache: process.env.NODE_ENV !== 'production'
 });
+njk.addFilter('timeAgo', (d: Date) => timeAgo(d, new Date()));
+njk.addFilter('fullDate', (d: Date) => new Intl.DateTimeFormat('en-US', {dateStyle: 'long'}).format(d));
+
 app.set("view engine", "njk");
 
 // Middleware
@@ -108,6 +113,18 @@ app.get('/search', async (req, res) => {
         totalPages: Math.ceil(total / PAGE_SIZE)
     });
 })
+
+app.get('/user/:username', async (req, res) => {
+    const profile = await getUserByUsername(req.params.username);
+    if (!profile) return res.status(404).render('404');
+
+    if (req.params.username !== profile.username) {
+        return res.redirect(301, `/user/${profile.username}`);
+    }
+
+    return res.render('profile', { profile });
+});
+
 
 // Auth Rotes
 const TOKEN_AGE = 5 * 60; // 5 Minutes (sec)

@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    </head>
+
+<body>
+    <h1>{{ profile.display_name or profile.username }}</h1>
+    <p>Account created at {{ profile.created_at }}</p>
+    <time datetime="{{ profile.created_at.toISOString() }}"
+        title="{{ profile.created_at | fullDate }}">
+        {{ profile.created_at | timeAgo }}
+    </time>
+</body>
+</html>
