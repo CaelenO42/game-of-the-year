@@ -93,3 +93,22 @@ CREATE TABLE IF NOT EXISTS username_reservation (
     expires_at TIMESTAMPTZ NOT NULL
 );
 CREATE INDEX IF NOT EXISTS username_reservation_user_id_idx ON username_reservation (user_id);
+
+CREATE TABLE IF NOT EXISTS user_session (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES app_user (id) ON DELETE CASCADE,
+    token_hash BYTEA NOT NULL UNIQUE,
+
+    -- Device info
+    user_agent TEXT CHECK (char_length(user_agent) <= 512),
+    os TEXT,
+    client TEXT,
+    location TEXT,
+
+    -- Lifetime
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_seen_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    expires_at TIMESTAMPTZ NOT NULL
+);
+CREATE INDEX IF NOT EXISTS user_session_user_id_idx ON user_session (user_id);
+CREATE INDEX IF NOT EXISTS user_session_expires_at_idx ON user_session (expires_at);

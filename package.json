@@ -21,6 +21,7 @@
     "license": "ARR",
     "type": "module",
     "dependencies": {
+        "bowser": "^2.15.0",
         "consola": "^3.4.2",
         "cookie-parser": "^1.4.7",
         "express": "^5.3.0",
