@@ -8,12 +8,13 @@ import { getTwitchData } from './services/twitchData.js';
 import { checkDb } from './db/pool.js';
 import consola from 'consola';
 import { adminAuth } from './firebase/admin.js';
-import { getUserByFirebaseUid, getUserByUsername, setUsername, upsertUser } from './db/users.js';
+import { getUserByUsername, setUsername, upsertUser } from './db/users.js';
 import cookieParser from "cookie-parser";
 import { validateUsername, USERNAME_MAX, USERNAME_MIN } from './username.js';
 import { safeNext } from './redirect.js';
 import { timeAgo } from './date.js';
-
+import { createSession, deleteSession, getSessionUser, touchSession } from './db/sessions.js';
+import { sessionMetaFromRequest } from './sessionMeta.js';
 const app = express();
 const PORT = 3000;
 
@@ -42,19 +43,21 @@ app.set("view engine", "njk");
 
 // Middleware
 async function loadUser(req: Request, res: Response, next: NextFunction) {
-    const sessionCookie = req.cookies[SESSION_COOKIE_NAME];
-    if (typeof sessionCookie !== 'string') return next();
+    const token = req.cookies[SESSION_COOKIE_NAME];
+    if (typeof token !== 'string') return next();
 
-    let uid: string;
-    try {
-        uid = (await adminAuth.verifySessionCookie(sessionCookie)).uid;
-    } catch (err) {
+    const sessionUser = await getSessionUser(token);
+    if (!sessionUser) {
+        clearCookie(res);
         return next();
     }
 
-    const user = await getUserByFirebaseUid(uid);
-    req.user = user ?? undefined;
+    req.user = sessionUser.user;
     res.locals.user = req.user;
+
+    const newExpiry = await touchSession(sessionUser.sessionId);
+    if (newExpiry) setCookie(res, token, newExpiry);
+
     next();
 }
 
@@ -128,7 +131,6 @@ app.get('/user/:username', async (req, res) => {
 
 // Auth Rotes
 const TOKEN_AGE = 5 * 60; // 5 Minutes (sec)
-const SESSION_EXPIRATION = 14 * 24 * 60 * 60 * 1000; // 14 days (ms)
 
 // Auth Routes
 app.get('/login', (req, res) => {
@@ -181,7 +183,6 @@ app.post('/auth/session', async (req, res) => {
     if (typeof idToken !== "string") return res.status(400).json({ error: "Missing idToken" });
 
     let uid: string;
-    let session: string;
     try {
         const token = await adminAuth.verifyIdToken(idToken);
 
@@ -189,7 +190,6 @@ app.post('/auth/session', async (req, res) => {
         if (currentTime - token.auth_time > TOKEN_AGE) return res.status(401).json({ error: "Recent sign-in required" });
 
         uid = token.uid;
-        session = await adminAuth.createSessionCookie(idToken, { expiresIn: SESSION_EXPIRATION });
     } catch (err) {
         consola.error(err);
         return res.status(401).json({ error: "Invalid token" });
@@ -197,13 +197,10 @@ app.post('/auth/session', async (req, res) => {
 
     try {
         const user = await upsertUser(uid);
+        const session = await createSession(user.id, sessionMetaFromRequest(req));
 
-        res.cookie("session", session, { 
-            maxAge: SESSION_EXPIRATION, 
-            httpOnly: true, 
-            secure: process.env.NODE_ENV === "production",
-            sameSite: "lax"
-        });
+        setCookie(res, session.token, session.expiresAt);
+
         const next = safeNext(req.body?.next);
         return res.json({
             redirect: user.username === null ? `/onboarding?next=${encodeURIComponent(next)}` : next
@@ -212,6 +209,14 @@ app.post('/auth/session', async (req, res) => {
         consola.error(err);
         return res.status(500).json({ error: "Could not load account" });
     }
+});
+
+app.post('/auth/logout', async (req, res) => {
+    const token = req.cookies[SESSION_COOKIE_NAME];
+    if (typeof token === 'string') await deleteSession(token);
+    clearCookie(res);
+
+    return res.redirect('/');
 });
 
 // 404 Catch all
@@ -235,4 +240,18 @@ function normalizePage(value: unknown): number {
     const page = Math.floor(Number(value));
     if (!Number.isFinite(page)) return 1;
     return Math.min(Math.max(page, 1), MAX_PAGE);
+}
+
+const COOKIE_OPTIONS = {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "lax",
+} as const;
+
+function setCookie(res: Response, token: string, expiresAt: Date) {
+    res.cookie(SESSION_COOKIE_NAME, token, { ...COOKIE_OPTIONS, expires: expiresAt });
+}
+
+function clearCookie(res: Response) {
+    res.clearCookie(SESSION_COOKIE_NAME, COOKIE_OPTIONS);
 }
