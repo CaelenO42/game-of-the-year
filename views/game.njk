@@ -15,6 +15,9 @@
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
         integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
         crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.4"
+        integrity="sha384-A986SAtodyH8eg8x8irJnYUk7i9inVQqYigD6qZ9evobksGNIXfeFvDwLSHcp31N"
+        crossorigin="anonymous"></script>
 </head>
 
 <body>
@@ -22,7 +25,9 @@
     <p>{{ game.summary }}</p>
     <p>{{ game.total_review_count }}</p>
     <h3>Game Stats</h3>
+    <div hx-ext="sse" sse-connect="/game/{{ game.id }}/events">
     {% include "partials/game_stats.njk" %}
+    </div>
     <img src="https://images.igdb.com/igdb/image/upload/t_cover_big/{{ game.cover_image_id }}.jpg">
     {% if steam and steam.data %}
     <h3>Steam Info</h3>
