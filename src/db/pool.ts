@@ -6,6 +6,10 @@ export const pool = new Pool({
     connectionString: requireEnv("DATABASE_URL")
 });
 
+pool.on("error", (err) => {
+    consola.error("Unexpected error on idle Postgres client:", err);
+});
+
 export async function checkDb() {
     try {
         await pool.query("SELECT 1");
