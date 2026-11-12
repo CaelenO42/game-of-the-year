@@ -12,12 +12,17 @@
             aspect-ratio: 16 / 9;
         }
     </style>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
+        integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
+        crossorigin="anonymous"></script>
 </head>
 
 <body>
     <p>{{ game.name }}</p>
     <p>{{ game.summary }}</p>
     <p>{{ game.total_review_count }}</p>
+    <h3>Game Stats</h3>
+    {% include "partials/game_stats.njk" %}
     <img src="https://images.igdb.com/igdb/image/upload/t_cover_big/{{ game.cover_image_id }}.jpg">
     {% if steam and steam.data %}
     <h3>Steam Info</h3>
@@ -31,12 +36,17 @@
     <p>Metascore: {{ steam.data.metacritic.score }}</p>
     {% endif %}
     {% endif %}
+    {% if user %}
+    {% include "partials/user_game_controls.njk" %}
+    {% else %}
+    <a href="/login?next={{ ('/game/' + game.id) | urlencode }}">Log in to rate</a>
+    {% endif %}
     {% if twitch and twitch.streams %}
     <h3>Twitch Info</h3>
     <p>Viewers on top {{ twitch.streams.length }} streams: {{ twitch.total_viewers.toLocaleString('en-US') }}</p>
     {% for stream in twitch.streams.slice(0, 5) %}
     <iframe loading="lazy"
-            src="https://player.twitch.tv/?channel={{ stream.user_login }}&parent=localhost&autoplay={{ 'true' if loop.first else 'false' }}">
+        src="https://player.twitch.tv/?channel={{ stream.user_login }}&parent=localhost&autoplay={{ 'true' if loop.first else 'false' }}">
     </iframe>
     {% endfor %}
     {% endif %}

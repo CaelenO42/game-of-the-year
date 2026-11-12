@@ -1,0 +1,10 @@
+<div id="game-stats"
+     hx-get="/game/{{ game.id }}/stats"
+     hx-trigger="stats-changed from:body"
+     hx-swap="outerHTML">
+  {% if stats.average !== null %}
+    <p>User rating: {{ stats.average | round(1) }} ({{ stats.count }} ratings)</p>
+  {% else %}
+    <p>No ratings yet</p>
+  {% endif %}
+</div>

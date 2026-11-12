@@ -5,6 +5,7 @@ import { slugify } from "../slug.js";
 import consola from "consola";
 import { getTwitchData } from "../services/twitchData.js";
 import { PAGE_SIZE, searchWithFallback } from "../services/gameSearch.js";
+import { getGameStats, getUserGame } from "../db/userGames.js";
 
 export const gamesRouter = Router();
 
@@ -26,15 +27,17 @@ gamesRouter.get('/game/:idslug', async (req, res) => {
     const path = `/game/${game.id}-${slugify(game.name)}`;
     if (req.path !== path) return res.redirect(301, path);
 
-    const [steam, twitch] = await Promise.all([
+    const [steam, twitch, stats, userGame] = await Promise.all([
         getSteamData(game.id).catch((err) => {
             consola.error(`Steam data failed for game ${game.id}:`, err);
             return null;
         }),
-        getTwitchData(game.id)
+        getTwitchData(game.id),
+        getGameStats(id),
+        (req.user) ? getUserGame(req.user.id, id) : undefined
     ])
 
-    return res.render('game', { game, steam, twitch });
+    return res.render('game', { game, steam, twitch, stats, userGame });
 });
 
 gamesRouter.get('/search', async (req, res) => {

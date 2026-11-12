@@ -9,6 +9,7 @@ import { homeRouter } from './routes/home.js';
 import { gamesRouter } from './routes/games.js';
 import { usersRouter } from './routes/users.js';
 import path from 'node:path';
+import { userGamesRouter } from './routes/userGames.js';
 
 export function createApp(): Express {
     const app = express();
@@ -43,6 +44,7 @@ export function createApp(): Express {
     app.use(authRouter);
     app.use(gamesRouter);
     app.use(usersRouter);
+    app.use(userGamesRouter);
 
     // ┌───────────────────────┐
     // │      Error Routes     │

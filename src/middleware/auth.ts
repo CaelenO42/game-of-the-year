@@ -28,8 +28,27 @@ export async function loadUser(req: Request, res: Response, next: NextFunction) 
     next();
 }
 
+function currentPageFromHtmx(req: Request): string | undefined {
+    const header = req.get("HX-Current-URL");
+    if (!header) return undefined;
+    try {
+        const url = new URL(header);
+        return url.pathname + url.search;
+    } catch {
+        return undefined;
+    }
+}
+
 export function requireAuth(req: Request, res: Response, next: NextFunction) {
     if (req.user) return next();
+
+    // make sure htmx reqests dont embed login page
+    if (req.get("HX-Request") === "true") {
+        const page = currentPageFromHtmx(req);
+        const target = page ? `/login?next=${encodeURIComponent(page)}` : "/login";
+        return res.set("HX-Redirect", target).status(401).end();
+    }
+
     if (req.method !== "GET") return res.redirect("/login");
     return res.redirect(`/login?next=${encodeURIComponent(req.originalUrl)}`);
 }
