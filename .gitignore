@@ -150,3 +150,6 @@ vite.config.ts.timestamp-*
 
 # Firebase
 firebase*.json
+
+# Other
+project_specifications.pdf
