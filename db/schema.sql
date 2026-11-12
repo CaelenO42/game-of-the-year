@@ -112,3 +112,37 @@ CREATE TABLE IF NOT EXISTS user_session (
 );
 CREATE INDEX IF NOT EXISTS user_session_user_id_idx ON user_session (user_id);
 CREATE INDEX IF NOT EXISTS user_session_expires_at_idx ON user_session (expires_at);
+
+-- ┌────────────────────────┐
+-- │ Rating / Review Tables │
+-- └────────────────────────┘
+CREATE TABLE IF NOT EXISTS user_game (
+    user_id INTEGER NOT NULL REFERENCES app_user (id) ON DELETE CASCADE,
+    game_id INTEGER NOT NULL REFERENCES game(id) ON DELETE CASCADE,
+
+    status TEXT CHECK (status IN ('playing','completed','plan_to_play','on_hold','dropped')),
+    rating SMALLINT CHECK (rating BETWEEN 0 AND 100),
+
+    favorited_at TIMESTAMPTZ,
+    library_added_at TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+    PRIMARY KEY (user_id, game_id),
+    CHECK (num_nonnulls(status, rating, favorited_at, library_added_at) > 0)
+);
+CREATE INDEX IF NOT EXISTS user_game_game_id_idx ON user_game (game_id);
+
+CREATE TABLE IF NOT EXISTS user_review (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES app_user (id) ON DELETE CASCADE,
+    game_id INTEGER NOT NULL REFERENCES game(id) ON DELETE CASCADE,
+
+    body TEXT NOT NULL,
+    contains_spoilers BOOLEAN NOT NULL DEFAULT FALSE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    UNIQUE (user_id, game_id)
+);
+CREATE INDEX IF NOT EXISTS user_review_game_id_created_at_idx ON user_review (game_id, created_at DESC);
