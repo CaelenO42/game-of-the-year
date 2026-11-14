@@ -29,6 +29,11 @@ export function createApp(): Express {
     app.set("view engine", "njk");
 
     // ┌───────────────────────┐
+    // │      Health Check     │
+    // └───────────────────────┘
+    app.get('/healthz', (req, res) => res.status(200).send('ok'));
+
+    // ┌───────────────────────┐
     // │       Middleware      │
     // └───────────────────────┘
     app.use(express.json());
