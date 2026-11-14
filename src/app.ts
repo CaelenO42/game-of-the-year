@@ -10,6 +10,7 @@ import { gamesRouter } from './routes/games.js';
 import { usersRouter } from './routes/users.js';
 import path from 'node:path';
 import { userGamesRouter } from './routes/userGames.js';
+import { STATUSES } from './userGame.js';
 
 export function createApp(): Express {
     const app = express();
@@ -24,6 +25,7 @@ export function createApp(): Express {
     });
     njk.addFilter('timeAgo', (d: Date) => timeAgo(d, new Date()));
     njk.addFilter('fullDate', (d: Date) => new Intl.DateTimeFormat('en-US', {dateStyle: 'long'}).format(d));
+    njk.addGlobal('STATUSES', STATUSES)
     app.set("view engine", "njk");
 
     // ┌───────────────────────┐

@@ -1,11 +1,32 @@
-<form id="user-game-controls"
-      hx-post="/game/{{ game.id }}/rating"
-      hx-target="#user-game-controls"
-      hx-swap="outerHTML">
-  <label>
-    Your rating
-    <input type="number" name="rating" min="0" max="100" step="1"
-           value="{% if userGame and userGame.rating !== null %}{{ userGame.rating }}{% endif %}">
-  </label>
-  <button type="submit">Rate</button>
-</form>
+<div id="user-game-controls">
+    <form hx-post="/game/{{ game.id }}/rating" hx-target="#user-game-controls" hx-swap="outerHTML">
+        <label>
+            Your rating
+            <input type="number" name="rating" min="0" max="100" step="1"
+                value="{% if userGame and userGame.rating !== null %}{{ userGame.rating }}{% endif %}">
+        </label>
+        <button type="submit">Rate</button>
+    </form>
+
+    <form hx-post="/game/{{ game.id }}/favorite" hx-target="#user-game-controls" hx-swap="outerHTML">
+        <input type="hidden" name="favorite" value="{{ 'false' if userGame and userGame.favorited_at else 'true' }}">
+        <button type="submit">{{ 'Unfavorite' if userGame and userGame.favorited_at else 'Favorite' }}</button>
+    </form>
+
+    <form hx-post="/game/{{ game.id }}/library" hx-target="#user-game-controls" hx-swap="outerHTML">
+        <input type="hidden" name="library" value="{{ 'false' if userGame and userGame.library_added_at else 'true' }}">
+        <button
+            type="submit">{{ 'Remove from Library' if userGame and userGame.library_added_at else 'Add to Library' }}</button>
+    </form>
+
+    <form hx-post="/game/{{ game.id }}/status" hx-trigger="change" hx-target="#user-game-controls" hx-swap="outerHTML">
+        <select name="status">
+            <option value="">No status</option>
+            {% for s in STATUSES %}
+            <option value="{{ s }}" {% if userGame and userGame.status == s %}selected{% endif %}>
+                {{ s | replace('_', ' ') | capitalize }}</option>
+            {% endfor %}
+        </select>
+    </form>
+
+</div>
