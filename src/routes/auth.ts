@@ -49,11 +49,11 @@ authRouter.post('/onboarding', requireAuth, async (req, res) => {
     if (setResult.ok) return res.redirect(next);
 
     switch (setResult.reason) {
-        case 'taken':    return renderOnboarding(res, 409, next, 'That username is taken.');
-        case 'reserved': return renderOnboarding(res, 409, next, 'That username was recently used and is currently unavailable.');
-        case 'cooldown': return renderOnboarding(res, 429, next, `You can change your username again on ${setResult.availableAt.toLocaleDateString()}.`);
+        case 'taken':    return renderOnboarding(res, 409, next, 'That username is taken.', result.username);
+        case 'reserved': return renderOnboarding(res, 409, next, 'That username was recently used and is currently unavailable.', result.username);
+        case 'cooldown': return renderOnboarding(res, 429, next, `You can change your username again on ${setResult.availableAt.toLocaleDateString()}.`, result.username);
         case 'no_user':  return res.redirect('/login');
-        default:         return renderOnboarding(res, 400, next, 'Invalid username.');
+        default:         return renderOnboarding(res, 400, next, 'Invalid username.', result.username);
     }
 })
 
