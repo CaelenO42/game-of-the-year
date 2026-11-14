@@ -35,6 +35,7 @@ export async function getSessionUser(token: string): Promise<{ user: UserRow, se
         JOIN app_user u ON u.id = s.user_id
         WHERE s.token_hash = $1
           AND s.expires_at > NOW()
+          AND u.banned_at IS NULL
     `, [hashToken(token)]);
 
     const row = result.rows[0];

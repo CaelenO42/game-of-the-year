@@ -11,6 +11,8 @@ import { usersRouter } from './routes/users.js';
 import path from 'node:path';
 import { userGamesRouter } from './routes/userGames.js';
 import { STATUSES } from './userGame.js';
+import { adminRouter } from './routes/admin.js';
+import { ROLES } from './roles.js';
 
 export function createApp(): Express {
     const app = express();
@@ -25,7 +27,8 @@ export function createApp(): Express {
     });
     njk.addFilter('timeAgo', (d: Date) => timeAgo(d, new Date()));
     njk.addFilter('fullDate', (d: Date) => new Intl.DateTimeFormat('en-US', {dateStyle: 'long'}).format(d));
-    njk.addGlobal('STATUSES', STATUSES)
+    njk.addGlobal('STATUSES', STATUSES);
+    njk.addGlobal('ROLES', ROLES);
     app.set("view engine", "njk");
 
     // ┌───────────────────────┐
@@ -52,6 +55,7 @@ export function createApp(): Express {
     app.use(gamesRouter);
     app.use(usersRouter);
     app.use(userGamesRouter);
+    app.use(adminRouter);
 
     // ┌───────────────────────┐
     // │      Error Routes     │

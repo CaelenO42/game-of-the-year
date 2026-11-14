@@ -1,0 +1,25 @@
+<tr id="u-entry-{{ u.id }}">
+    <td>{{ u.id }}</td>
+    <td>{{ u.username }}</td>
+    <td>{{ u.display_name }}</td>
+    <td>
+        <form hx-post="/admin/users/{{ u.id }}/role" autocomplete="off" hx-trigger="change"
+            hx-target="#u-entry-{{ u.id }}" hx-swap="outerHTML">
+            <select name="role" autocomplete="off" {% if u.id === user.id %}disabled{% endif %}>
+                {% for r in ROLES %}
+                <option value="{{ r }}" {% if u and u.role == r %}selected{% endif %}>
+                    {{ r | replace('_', ' ') | capitalize }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </td>
+    <td>{{ u.created_at }}</td>
+    <td>
+        <form hx-post="/admin/users/{{ u.id }}/ban"
+            hx-confirm="{{ 'Unban' if u.banned_at else 'Ban' }} {{ u.username }}?" hx-target="#u-entry-{{ u.id }}"
+            hx-swap="outerHTML">
+            <input type="hidden" name="ban" value="{{ 'false' if u.banned_at else 'true' }}">
+            <button type="submit" {% if u.id === user.id or u.role === 'admin' %}disabled{% endif %}>{{ 'Unban' if u.banned_at else 'Ban' }}</button>
+        </form>
+    </td>
+</tr>

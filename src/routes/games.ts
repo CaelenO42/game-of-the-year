@@ -6,16 +6,11 @@ import consola from "consola";
 import { getTwitchData } from "../services/twitchData.js";
 import { PAGE_SIZE, searchWithFallback } from "../services/gameSearch.js";
 import { getGameStats, getUserGame } from "../db/userGames.js";
+import { normalizePage } from "../page.js";
 
 export const gamesRouter = Router();
 
 const MAX_PAGE = 500;
-
-function normalizePage(value: unknown): number {
-    const page = Math.floor(Number(value));
-    if (!Number.isFinite(page)) return 1;
-    return Math.min(Math.max(page, 1), MAX_PAGE);
-}
 
 gamesRouter.get('/game/:idslug', async (req, res) => {
     const id = parseInt(req.params.idslug);
@@ -42,7 +37,7 @@ gamesRouter.get('/game/:idslug', async (req, res) => {
 
 gamesRouter.get('/search', async (req, res) => {
     const query = req.query.q;
-    const page = normalizePage(req.query.page);
+    const page = normalizePage(req.query.page, MAX_PAGE);
     if (typeof query !== 'string' || query.length === 0) return res.redirect('/');
     
     const { results, total } = await searchWithFallback(query, page);

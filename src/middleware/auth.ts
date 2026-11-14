@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { getSessionUser, touchSession } from '../db/sessions.js';
+import type { Role } from '../roles.js';
 
 const SESSION_COOKIE_NAME = "session";
 const ONBOARDING_ALLOWED = ["/onboarding", "/auth"];
@@ -61,6 +62,16 @@ export function enforceOnboarding(req: Request, res: Response, next: NextFunctio
 
     if (req.method !== "GET") return res.status(403).json({ error: "Choose a username first" });
     return res.redirect(`/onboarding?next=${encodeURIComponent(req.originalUrl)}`);
+}
+
+export function requireRole(role: Role) {
+    return (req: Request, res: Response, next: NextFunction) => {
+        if (!req.user || req.user.role !== role) {
+            if (req.get("HX-Request") === "true") return res.status(403).end();
+            return res.status(403).render('403');
+        }
+        return next();
+    };
 }
 
 export function setCookie(res: Response, token: string, expiresAt: Date) {

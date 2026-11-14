@@ -1,5 +1,7 @@
+import type { Role } from "../roles.js";
 import { validateUsername } from "../username.js";
 import { pool, withTransaction } from "./pool.js";
+import { deleteAllSessions } from "./sessions.js";
 
 export type UserRow = {
     id: number,
@@ -7,8 +9,10 @@ export type UserRow = {
     username: string | null,
     display_name: string | null,
     profile_picture: string | null,
+    role: Role,
     username_changed_at: Date | null,
-    created_at: Date
+    created_at: Date,
+    banned_at: Date | null
 }
 
 type UsernameResponse =
@@ -16,7 +20,13 @@ type UsernameResponse =
     | { ok: false, reason: "taken" | "no_user" | "reserved" | "invalid" }
     | { ok: false, reason: "cooldown", availableAt: Date };
 
-const USERNAME_COLUMNS = "id, firebase_uid, username, display_name, profile_picture, username_changed_at, created_at";
+type AdminActionResponse = 
+    | { ok: true, user: UserRow }
+    | { ok: false, reason: 'not_admin' | 'no_user' | 'self' | 'target_is_admin' }
+
+const USERNAME_COLUMNS = "id, firebase_uid, username, display_name, profile_picture, role, username_changed_at, created_at, banned_at";
+const USERNAME_COOLDOWN_DAYS = 30;
+const USERNAME_RESERVED_DAYS = 37;
 
 export async function getUser(id: number): Promise<UserRow | undefined> {
     const userData = await pool.query<UserRow>(`
@@ -37,9 +47,6 @@ export async function getUserByFirebaseUid(firebaseUid: string): Promise<UserRow
 
     return userData.rows[0];
 }
-
-const USERNAME_COOLDOWN_DAYS = 30;
-const USERNAME_RESERVED_DAYS = 37;
 
 export async function setUsername(id: number, raw: string): Promise<UsernameResponse> {
     const result = validateUsername(raw);
@@ -129,4 +136,59 @@ export async function upsertUser(firebaseUid: string): Promise<UserRow> {
         `, [firebaseUid]);
 
     return userData.rows[0]!;
+}
+
+export async function setRole(adminId: number, userId: number, role: Role): Promise<AdminActionResponse> {
+    if (adminId === userId) return { ok: false, reason: 'self' };
+    const admin = await getUser(adminId);
+    if (admin?.role !== 'admin') return { ok: false, reason: 'not_admin' };
+
+    const userData = await pool.query<UserRow>(`
+        UPDATE app_user
+        SET role = $2
+        WHERE id = $1
+        RETURNING ${USERNAME_COLUMNS}
+    `, [userId, role]);
+
+    if (!userData.rows[0]) return { ok: false, reason: 'no_user' };
+    return { ok: true, user: userData.rows[0] };
+}
+
+export async function setBanned(adminId: number, userId: number, banned: boolean): Promise<AdminActionResponse> {
+    if (adminId === userId) return { ok: false, reason: 'self' };
+    const admin = await getUser(adminId);
+    if (admin?.role !== 'admin') return { ok: false, reason: 'not_admin' };
+
+    const userData = await pool.query<UserRow>(`
+        UPDATE app_user
+        SET banned_at = CASE WHEN $2 THEN COALESCE(banned_at, NOW()) ELSE NULL END
+        WHERE id = $1
+            AND (NOT $2 OR role <> 'admin')
+        RETURNING ${USERNAME_COLUMNS}
+    `, [userId, banned]);
+
+    if (!userData.rows[0]) {
+        const actionUser = await getUser(userId);
+        if (!actionUser) return { ok: false, reason: 'no_user' };
+        return { ok: false, reason: 'target_is_admin' };
+    }
+    if (banned) await deleteAllSessions(userId);
+    return { ok: true, user: userData.rows[0] };
+}
+
+export async function listUsers(pageSize: number = 20, page: number = 1): Promise<{ users: UserRow[], total: number}> {
+    const offset = (page - 1) * pageSize;
+    const [ users, total ] = await Promise.all([
+        pool.query<UserRow>(`
+            SELECT ${USERNAME_COLUMNS}
+            FROM app_user
+            ORDER BY created_at DESC, id DESC
+            LIMIT $1 OFFSET $2
+        `, [pageSize, offset]),
+        pool.query<{ total: number }>(`
+            SELECT COUNT(*)::int AS total FROM app_user
+        `)
+    ]);
+
+    return { users: users.rows, total: total.rows[0]!.total };
 }
