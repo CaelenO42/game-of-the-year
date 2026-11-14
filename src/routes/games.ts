@@ -37,7 +37,7 @@ gamesRouter.get('/game/:idslug', async (req, res) => {
         (req.user) ? getUserGame(req.user.id, id) : undefined
     ])
 
-    return res.render('game', { game, steam, twitch, stats, userGame });
+    return res.render('game', { game, steam, twitch, stats, userGame, host: req.hostname });
 });
 
 gamesRouter.get('/search', async (req, res) => {

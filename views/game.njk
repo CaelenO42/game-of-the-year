@@ -51,7 +51,7 @@
     <p>Viewers on top {{ twitch.streams.length }} streams: {{ twitch.total_viewers.toLocaleString('en-US') }}</p>
     {% for stream in twitch.streams.slice(0, 5) %}
     <iframe loading="lazy"
-        src="https://player.twitch.tv/?channel={{ stream.user_login }}&parent=localhost&autoplay={{ 'true' if loop.first else 'false' }}">
+        src="https://player.twitch.tv/?channel={{ stream.user_login }}&parent={{ host | urlencode }}&autoplay={{ 'true' if loop.first else 'false' }}">
     </iframe>
     {% endfor %}
     {% endif %}
