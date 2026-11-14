@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
+        integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
+        crossorigin="anonymous"></script>
+    <script type="module" src="/js/adminUsers.js"></script>
+</head>
+
+<body>
+    <h1>User Management</h1>
+    {% if users | length %}
+    <table>
+        <thead>
+            <tr>
+                <th>ID</th>
+                <th>Username</th>
+                <th>Display Name</th>
+                <th>Role</th>
+                <th>Created At</th>
+            </tr>
+        </thead>
+        {% for u in users %}
+        {% include "partials/admin_user.njk" %}
+        {% endfor %}
+    </table>
+    <dialog id="confirm-dialog">
+        <p id="confirm-text"></p>
+        <button id="confirm-cancel" type="button">Cancel</button>
+        <button id="confirm-ok" type="button">Confirm</button>
+    </dialog>
+
+    {% if totalPages > 1 %}
+    <nav>
+        {% if page > 1 %}<a href="/admin/users?p={{ page - 1 }}">Previous</a>{% endif %}
+        <span>Page {{ page }} of {{ totalPages }}</span>
+        {% if page < totalPages %}<a href="/admin/users?p={{ page + 1 }}">Next</a>{% endif %}
+    </nav>
+    {% endif %}
+    {% else %}
+    <p>There are no users in the database.</p>
+    {% endif %}
+</body>
+
+</html>
