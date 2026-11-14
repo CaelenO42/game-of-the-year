@@ -83,8 +83,10 @@ CREATE TABLE IF NOT EXISTS app_user (
     username TEXT UNIQUE CONSTRAINT app_user_username_lowercase CHECK (username = lower(username)),
     display_name TEXT,
     profile_picture TEXT,
+    role TEXT NOT NULL DEFAULT 'user' CHECK (role IN ('user','admin')),
     username_changed_at TIMESTAMPTZ,
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    banned_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS username_reservation (
