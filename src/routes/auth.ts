@@ -79,6 +79,7 @@ authRouter.post('/auth/session', async (req, res) => {
 
     try {
         const user = await upsertUser(uid);
+        if (user.banned_at) return res.status(403).json({ error: "This account has been suspended." });
         const session = await createSession(user.id, sessionMetaFromRequest(req));
 
         setCookie(res, session.token, session.expiresAt);
