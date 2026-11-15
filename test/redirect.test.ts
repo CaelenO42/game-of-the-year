@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest';
-import { safeNext } from '../src/redirect.js';
+import { safeNext } from '../src/lib/redirect.js';
 
 describe('safeNext', () => {
     test('accepts a valid same site url and returns it', () => {

@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { isRole, validateRole } from "../src/roles.js";
+import { isRole, validateRole } from "../src/validation/roles.js";
 
 describe("isRole", () => {
     test.each(["admin", "user"])("accepts %s", (value) => {

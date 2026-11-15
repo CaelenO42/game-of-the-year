@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from 'express';
 import { getSessionUser, touchSession } from '../db/sessions.js';
-import type { Role } from '../roles.js';
+import type { Role } from '../validation/roles.js';
 
 const SESSION_COOKIE_NAME = "session";
 const ONBOARDING_ALLOWED = ["/onboarding", "/auth"];

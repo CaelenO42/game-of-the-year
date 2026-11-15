@@ -1,5 +1,5 @@
 import { Pool, type PoolClient } from "pg";
-import { requireEnv } from "../env.js";
+import { requireEnv } from "../lib/env.js";
 import consola from "consola";
 
 export const pool = new Pool({ 

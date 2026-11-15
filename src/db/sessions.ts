@@ -1,6 +1,6 @@
 import { createHash, randomBytes } from "node:crypto";
 import { pool } from "./pool.js";
-import type { SessionMeta } from "../sessionMeta.js";
+import type { SessionMeta } from "../lib/sessionMeta.js";
 import type { UserRow } from "./users.js";
 
 export const SESSION_EXPIRATION_DAYS: number = 30;

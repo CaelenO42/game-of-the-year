@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { isStatus, validateRating, validateStatus } from "../src/userGame.js";
+import { isStatus, validateRating, validateStatus } from "../src/validation/userGame.js";
 
 describe("validateRating", () => {
     test.each([

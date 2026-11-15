@@ -1,12 +1,12 @@
 import { Router } from "express";
 import { getGame } from "../db/games.js";
 import { getSteamData } from "../services/steamData.js";
-import { slugify } from "../slug.js";
+import { slugify } from "../lib/slug.js";
 import consola from "consola";
 import { getTwitchData } from "../services/twitchData.js";
 import { PAGE_SIZE, searchWithFallback } from "../services/gameSearch.js";
 import { getGameStats, getUserGame } from "../db/userGames.js";
-import { normalizePage } from "../page.js";
+import { normalizePage } from "../lib/page.js";
 
 export const gamesRouter = Router();
 

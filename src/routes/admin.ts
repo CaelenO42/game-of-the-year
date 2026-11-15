@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { normalizePage } from "../page.js";
+import { normalizePage } from "../lib/page.js";
 import { listUsers, setBanned, setRole } from "../db/users.js";
 import { getCookie, requireAuth, requireRole } from "../middleware/auth.js";
-import { validateRole } from "../roles.js";
+import { validateRole } from "../validation/roles.js";
 import { error } from "node:console";
 
 export const adminRouter = Router();

@@ -1,4 +1,4 @@
-import { requireEnv } from "../env.js";
+import { requireEnv } from "../lib/env.js";
 
 const TWITCH_CLIENT_ID = requireEnv("TWITCH_CLIENT_ID");
 const TWITCH_TOKEN = requireEnv("TWITCH_TOKEN");
