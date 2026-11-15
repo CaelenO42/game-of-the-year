@@ -1,7 +1,7 @@
 import { Router } from "express";
-import { findGame, findGameFromSlug } from "./helpers.js";
+import { findGame, findGameFromSlug, findUser } from "./helpers.js";
 import { normalizePage } from "../lib/page.js";
-import { deleteReview, getUserReview, listReviewsForGame, setReview } from "../db/userReviews.js";
+import { deleteReview, getReview, getUserReview, listReviewsForGame, setReview } from "../db/userReviews.js";
 import { getGameStats, getUserGame } from "../db/userGames.js";
 import { fetchLatestReviews } from "../services/reviews.js";
 import { validateReviewBody } from "../validation/review.js";
@@ -68,7 +68,25 @@ reviewsRouter.delete('/game/:id/review', requireAuth, async (req, res) => {
     await deleteReview(req.user.id, game.id);
 
     publish(`game:${game.id}`, 'reviews-changed');
+
+    if (req.query.from === 'review') {
+        res.set('HX-Redirect', `/game/${game.id}-${slugify(game.name)}`);
+        return res.end();
+    }
+
     res.set('HX-Trigger', 'reviews-changed');
     res.render('reviews/partials/review_form', { game });
 })
 
+reviewsRouter.get('/user/:username/game/:idslug', async (req, res) => {
+    const profile = await findUser(req, res);
+    if (!profile) return;
+
+    const game = await findGameFromSlug(req, res);
+    if (!game) return;
+
+    const userReview = await getReview(profile.id, game.id);
+    if (!userReview) return res.status(404).render('errors/404');
+
+    res.render('reviews/review', { game, profile, userReview });
+})

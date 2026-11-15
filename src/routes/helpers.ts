@@ -1,5 +1,6 @@
 import type { Request, Response } from "express";
 import { getGame, type GameDetail } from "../db/games.js";
+import { getUserByUsername, type UserRow } from "../db/users.js";
 
 export async function findGame(req: Request, res: Response): Promise<GameDetail | undefined> {
     const id = Number(req.params.id);
@@ -16,4 +17,12 @@ export async function findGameFromSlug(req: Request, res: Response): Promise<Gam
     const game = await getGame(id);
     if (!game) { res.status(404).render('errors/404'); return undefined; }
     return game;
+}
+
+export async function findUser(req: Request, res: Response): Promise<UserRow | undefined> {
+    const raw = req.params.username;
+    if (typeof raw !== 'string') { res.status(400).render('errors/400'); return undefined; }
+    const profile = await getUserByUsername(raw);
+    if (!profile) { res.status(404).render('errors/404'); return undefined; }
+    return profile;
 }
