@@ -16,6 +16,7 @@ import { ROLES } from './validation/roles.js';
 import { reviewsRouter } from './routes/reviews.js';
 import { REVIEW_MAX_LENGTH } from './validation/review.js';
 import { slugify } from './lib/slug.js';
+import { liveRouter } from './routes/live.js';
 
 export function createApp(): Express {
     const app = express();
@@ -62,6 +63,7 @@ export function createApp(): Express {
     app.use(userGamesRouter);
     app.use(adminRouter);
     app.use(reviewsRouter);
+    app.use(liveRouter);
 
     // ┌───────────────────────┐
     // │      Error Routes     │
