@@ -44,9 +44,9 @@
     </div>
     {% if totalPages > 1 %}
     <nav>
-        {% if page > 1 %}<a href="/admin/users?p={{ page - 1 }}">Previous</a>{% endif %}
+        {% if page > 1 %}<a href="/game/{{ game.id }}-{{ game.name | slugify }}/reviews?p={{ page - 1 }}">Previous</a>{% endif %}
         <span>Page {{ page }} of {{ totalPages }}</span>
-        {% if page < totalPages %}<a href="/admin/users?p={{ page + 1 }}">Next</a>{% endif %}
+        {% if page < totalPages %}<a href="/game/{{ game.id }}-{{ game.name | slugify }}/reviews?p={{ page + 1 }}">Next</a>{% endif %}
     </nav>
     {% endif %}
     {% include "shared/confirm_dialog.njk" %}
