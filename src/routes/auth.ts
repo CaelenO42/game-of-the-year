@@ -14,16 +14,16 @@ const TOKEN_AGE = 5 * 60; // 5 Minutes (sec)
 // Auth Routes
 authRouter.get('/login', (req, res) => {
     if (req.user) return res.redirect(safeNext(req.query.next));
-    res.render('login', { next: safeNext(req.query.next) });
+    res.render('auth/login', { next: safeNext(req.query.next) });
 })
 
 authRouter.get('/signup', (req, res) => {
     if (req.user) return res.redirect(safeNext(req.query.next));
-    res.render('signup', { next: safeNext(req.query.next) });
+    res.render('auth/signup', { next: safeNext(req.query.next) });
 })
 
 function renderOnboarding(res: Response, status: number, next: string, error?: string, username?: string) {
-    return res.status(status).render('onboarding', { 
+    return res.status(status).render('auth/onboarding', { 
         error, 
         next: safeNext(next),
         usernameMin: USERNAME_MIN,

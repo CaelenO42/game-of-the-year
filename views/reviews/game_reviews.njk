@@ -25,10 +25,10 @@
     <p>{{ game.name }}</p>
     <p>{{ game.total_review_count }}</p>
     <h3>Game Stats</h3>
-    {% include "partials/game_stats.njk" %}
+    {% include "games/partials/game_stats.njk" %}
     {% if user %}
-    {% include "partials/user_game_controls.njk" %}
-    {% include "partials/review_form.njk" %}
+    {% include "games/partials/user_game_controls.njk" %}
+    {% include "reviews/partials/review_form.njk" %}
     {% else %}
     <a href="/login?next={{ ('/game/' + game.id + '/reviews') | urlencode }}">Log in to rate</a>
     {% endif %}
@@ -37,7 +37,7 @@
     <div id="review-items" hx-get="/game/{{ game.id }}-{{ game.name | slugify }}/reviews?p={{ page }}"
         hx-trigger="reviews-changed from:body" hx-select="#review-items" hx-swap="outerHTML">
         {% for review in reviews %}
-        {% include "partials/review_item.njk" %}
+        {% include "reviews/partials/review_item.njk" %}
         {% else %}
         <p>No reviews yet.</p>
         {% endfor %}
@@ -49,7 +49,7 @@
         {% if page < totalPages %}<a href="/admin/users?p={{ page + 1 }}">Next</a>{% endif %}
     </nav>
     {% endif %}
-    {% include "partials/confirm_dialog.njk" %}
+    {% include "shared/confirm_dialog.njk" %}
 </body>
 
 </html>
