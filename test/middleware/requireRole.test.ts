@@ -42,7 +42,7 @@ describe("requireRole('admin')", () => {
 
         expect(next).not.toHaveBeenCalled();
         expect(res.status).toHaveBeenCalledWith(403);
-        expect(res.render).toHaveBeenCalledWith("403");
+        expect(res.render).toHaveBeenCalledWith("errors/403");
     });
 
     test("refuses a request with no user", () => {

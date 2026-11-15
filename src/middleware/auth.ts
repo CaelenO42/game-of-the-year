@@ -68,7 +68,7 @@ export function requireRole(role: Role) {
     return (req: Request, res: Response, next: NextFunction) => {
         if (!req.user || req.user.role !== role) {
             if (req.get("HX-Request") === "true") return res.status(403).end();
-            return res.status(403).render('403');
+            return res.status(403).render('errors/403');
         }
         return next();
     };

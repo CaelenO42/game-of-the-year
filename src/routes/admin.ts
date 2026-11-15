@@ -38,7 +38,7 @@ adminRouter.post('/admin/users/:id/role', async (req, res) => {
             case 'target_is_admin': return res.status(409).json({ error: 'User must be demoted before banning them.' })
         }
     }
-    return res.render('partials/admin_user', { u: result.user });
+    return res.render('admin/partials/admin_user', { u: result.user });
 })
 
 adminRouter.post('/admin/users/:id/ban', async (req, res) => {
@@ -60,5 +60,5 @@ adminRouter.post('/admin/users/:id/ban', async (req, res) => {
             case 'target_is_admin': return res.status(409).json({ error: 'User must be demoted before banning them.' })
         }
     }
-    return res.render('partials/admin_user', { u: result.user });
+    return res.render('admin/partials/admin_user', { u: result.user });
 })

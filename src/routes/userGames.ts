@@ -14,7 +14,7 @@ userGamesRouter.get('/game/:id/stats', async (req, res) => {
     if (!game) return;
 
     const stats = await getGameStats(game.id);
-    res.render('partials/game_stats', { game, stats });
+    res.render('games/partials/game_stats', { game, stats });
 })
 
 userGamesRouter.get('/game/:id/events', async (req, res) => {
@@ -40,7 +40,7 @@ userGamesRouter.post('/game/:id/rating', requireAuth, async (req, res) => {
     publish(game.id, 'stats-changed');
 
     res.set('HX-Trigger', 'stats-changed');
-    res.render('partials/user_game_controls', {game, userGame});
+    res.render('games/partials/user_game_controls', {game, userGame});
 })
 
 userGamesRouter.post('/game/:id/favorite', requireAuth, async (req, res) => {
@@ -54,7 +54,7 @@ userGamesRouter.post('/game/:id/favorite', requireAuth, async (req, res) => {
     const favBool = favorite === 'true';
 
     const userGame = await setFavorite(req.user.id, game.id, favBool);
-    res.render('partials/user_game_controls', {game, userGame});
+    res.render('games/partials/user_game_controls', {game, userGame});
 })
 
 userGamesRouter.post('/game/:id/library', requireAuth, async (req, res) => {
@@ -68,7 +68,7 @@ userGamesRouter.post('/game/:id/library', requireAuth, async (req, res) => {
     const libBool = library === 'true';
 
     const userGame = await setLibrary(req.user.id, game.id, libBool);
-    res.render('partials/user_game_controls', {game, userGame});
+    res.render('games/partials/user_game_controls', {game, userGame});
 })
 
 userGamesRouter.post('/game/:id/status', requireAuth, async (req, res) => {
@@ -82,6 +82,6 @@ userGamesRouter.post('/game/:id/status', requireAuth, async (req, res) => {
     if (!parsed.ok) return res.status(400).json({ error: parsed.error });
 
     const userGame = await setStatus(req.user.id, game.id, parsed.status);
-    res.render('partials/user_game_controls', {game, userGame});
+    res.render('games/partials/user_game_controls', {game, userGame});
 })
 

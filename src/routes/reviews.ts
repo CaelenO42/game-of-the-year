@@ -32,7 +32,7 @@ reviewsRouter.get('/game/:idslug/reviews', async (req, res) => {
 
     if (reviews.length === 0 && page > 1) return res.redirect(`/game/${req.params.idslug}/reviews?p=1`);
 
-    return res.render('game_reviews', { game, reviews, stats, userGame, userReview, page, totalPages: Math.ceil(total / PAGE_SIZE) })
+    return res.render('reviews/game_reviews', { game, reviews, stats, userGame, userReview, page, totalPages: Math.ceil(total / PAGE_SIZE) })
 })
 
 reviewsRouter.get('/game/:id/reviews/latest', async (req, res) => {
@@ -41,7 +41,7 @@ reviewsRouter.get('/game/:id/reviews/latest', async (req, res) => {
 
     const { reviews, total } = await fetchLatestReviews(game.id);
 
-    return res.render('partials/review_list', { game, reviews, totalReviews: total })
+    return res.render('reviews/partials/review_list', { game, reviews, totalReviews: total })
 })
 
 reviewsRouter.post('/game/:id/review', requireAuth, async (req, res) => {
@@ -56,7 +56,7 @@ reviewsRouter.post('/game/:id/review', requireAuth, async (req, res) => {
 
     publish(game.id, 'reviews-changed');
     res.set('HX-Trigger', 'reviews-changed');
-    res.render('partials/review_form', { game, userReview: review });
+    res.render('reviews/partials/review_form', { game, userReview: review });
 })
 
 reviewsRouter.delete('/game/:id/review', requireAuth, async (req, res) => {
@@ -69,6 +69,6 @@ reviewsRouter.delete('/game/:id/review', requireAuth, async (req, res) => {
 
     publish(game.id, 'reviews-changed');
     res.set('HX-Trigger', 'reviews-changed');
-    res.render('partials/review_form', { game });
+    res.render('reviews/partials/review_form', { game });
 })
 

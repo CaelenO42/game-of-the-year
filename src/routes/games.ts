@@ -34,7 +34,7 @@ gamesRouter.get('/game/:idslug', async (req, res) => {
         (req.user) ? getUserReview(req.user.id, game.id) : undefined
     ])
 
-    return res.render('game', { game, steam, twitch, stats, reviews: reviews.reviews, totalReviews: reviews.total, userGame, userReview, host: req.hostname });
+    return res.render('games/game', { game, steam, twitch, stats, reviews: reviews.reviews, totalReviews: reviews.total, userGame, userReview, host: req.hostname });
 });
 
 gamesRouter.get('/search', async (req, res) => {
@@ -44,7 +44,7 @@ gamesRouter.get('/search', async (req, res) => {
 
     const { results, total } = await searchWithFallback(query, page);
     if (results.length === 0 && page > 1) return res.redirect(`/search?q=${encodeURIComponent(query)}`);
-    return res.render('search', { 
+    return res.render('games/search', { 
         results, total, page, query, 
         totalPages: Math.ceil(total / PAGE_SIZE)
     });

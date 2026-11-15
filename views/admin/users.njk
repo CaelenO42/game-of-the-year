@@ -25,7 +25,7 @@
             </tr>
         </thead>
         {% for u in users %}
-        {% include "partials/admin_user.njk" %}
+        {% include "admin/partials/admin_user.njk" %}
         {% endfor %}
     </table>
     {% if totalPages > 1 %}
@@ -38,7 +38,7 @@
     {% else %}
     <p>There are no users in the database.</p>
     {% endif %}
-    {% include "partials/confirm_dialog.njk" %}
+    {% include "shared/confirm_dialog.njk" %}
 </body>
 
 </html>
