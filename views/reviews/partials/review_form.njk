@@ -1,19 +1,17 @@
 <div id="review-box">
-    <form hx-post="/game/{{ game.id }}/review" autocomplete="off"
-          hx-target="#review-box" hx-swap="outerHTML">
+    <form hx-post="/game/{{ game.id }}/review" autocomplete="off" hx-target="#review-box" hx-swap="outerHTML">
         <textarea name="text" required maxlength="{{ REVIEW_MAX_LENGTH }}" aria-label="Your review"
-                  placeholder="Type a review...">{{ userReview.body }}</textarea>
+            placeholder="Type a review...">{{ userReview.body }}</textarea>
         <label>
             <input type="checkbox" name="contains_spoilers" value="true"
-                   {% if userReview and userReview.contains_spoilers %}checked{% endif %}>
+                {% if userReview and userReview.contains_spoilers %}checked{% endif %}>
             Contains spoilers
         </label>
         <button type="submit">{{ 'Update review' if userReview else 'Submit review' }}</button>
     </form>
 
     {% if userReview %}
-    <button type="button" hx-delete="/game/{{ game.id }}/review"
-            hx-target="#review-box" hx-swap="outerHTML"
-            hx-confirm="Delete your review?">Delete</button>
+    <button type="button" hx-delete="/game/{{ game.id }}/review{{ '?from=review' if fromReviewPage }}"
+        hx-target="#review-box" hx-swap="outerHTML" hx-confirm="Delete your review?">Delete</button>
     {% endif %}
 </div>

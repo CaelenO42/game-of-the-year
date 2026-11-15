@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
+        integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.4"
+        integrity="sha384-A986SAtodyH8eg8x8irJnYUk7i9inVQqYigD6qZ9evobksGNIXfeFvDwLSHcp31N"
+        crossorigin="anonymous"></script>
+    <script type="module" src="/js/confirm.js"></script>
+</head>
+
+<body hx-ext="sse" sse-connect="/game/{{ game.id }}/events">
+    {% if user.id === profile.id %}
+    {% set fromReviewPage = true %}
+    {% include 'reviews/partials/review_form.njk' %}
+    {% else %}
+    <article class="review">
+        <header>
+            {{ userReview.display_name or userReview.username }}
+            {% if userReview.rating !== null %}<span>{{ userReview.rating }}/100</span>{% endif %}
+            <time datetime="{{ userReview.created_at.toISOString() }}"
+                title="{{ userReview.created_at | fullDate }}">{{ userReview.created_at | timeAgo }}</time>
+        </header>
+
+        {% if userReview.contains_spoilers %}
+        <details>
+            <summary>Contains spoilers</summary>
+            <div style="white-space: pre-wrap">{{ userReview.body }}</div>
+        </details>
+        {% else %}
+        <div style="white-space: pre-wrap">{{ userReview.body }}</div>
+        {% endif %}
+    </article>
+    {% endif %}
+    {% include "shared/confirm_dialog.njk" %}
+</body>
+
+</html>
