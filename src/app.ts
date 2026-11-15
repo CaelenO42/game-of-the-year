@@ -3,16 +3,16 @@ import express, { type Express, type Request, type Response, type NextFunction }
 import nunjucks from 'nunjucks';
 import { enforceOnboarding, loadUser } from './middleware/auth.js';
 import consola from 'consola';
-import { timeAgo } from './date.js';
+import { timeAgo } from './lib/date.js';
 import { authRouter } from './routes/auth.js';
 import { homeRouter } from './routes/home.js';
 import { gamesRouter } from './routes/games.js';
 import { usersRouter } from './routes/users.js';
 import path from 'node:path';
 import { userGamesRouter } from './routes/userGames.js';
-import { STATUSES } from './userGame.js';
+import { STATUSES } from './validation/userGame.js';
 import { adminRouter } from './routes/admin.js';
-import { ROLES } from './roles.js';
+import { ROLES } from './validation/roles.js';
 
 export function createApp(): Express {
     const app = express();

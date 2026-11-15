@@ -1,5 +1,5 @@
 import { initializeApp, cert } from "firebase-admin/app";
-import { requireEnv } from "../env.js";
+import { requireEnv } from "../lib/env.js";
 import { readFileSync } from "node:fs";
 import { getAuth } from "firebase-admin/auth";
 

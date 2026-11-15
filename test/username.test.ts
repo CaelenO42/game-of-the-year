@@ -1,5 +1,5 @@
 import { describe, expect, test } from "vitest";
-import { validateUsername } from "../src/username.js";
+import { validateUsername } from "../src/validation/username.js";
 
 describe("validateUsername", () => {
     test("accepts a normal name and lowercases it", () => {

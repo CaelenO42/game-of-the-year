@@ -1,4 +1,4 @@
-import type { Status } from '../userGame.js';
+import type { Status } from '../validation/userGame.js';
 import { pool } from './pool.js';
 
 const USER_GAME_COLUMNS = 'user_id, game_id, status, rating, favorited_at, library_added_at, created_at, updated_at';

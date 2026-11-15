@@ -1,12 +1,12 @@
 import { Router, type Response } from "express";
-import { safeNext } from "../redirect.js";
-import { USERNAME_MAX, USERNAME_MIN, validateUsername } from "../username.js";
+import { safeNext } from "../lib/redirect.js";
+import { USERNAME_MAX, USERNAME_MIN, validateUsername } from "../validation/username.js";
 import { clearCookie, getCookie, requireAuth, setCookie } from "../middleware/auth.js";
 import { setUsername, upsertUser } from "../db/users.js";
 import { adminAuth } from "../firebase/admin.js";
 import consola from "consola";
 import { createSession, deleteSession } from "../db/sessions.js";
-import { sessionMetaFromRequest } from "../sessionMeta.js";
+import { sessionMetaFromRequest } from "../lib/sessionMeta.js";
 
 export const authRouter = Router();
 const TOKEN_AGE = 5 * 60; // 5 Minutes (sec)

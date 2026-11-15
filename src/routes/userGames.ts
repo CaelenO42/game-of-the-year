@@ -1,9 +1,9 @@
 import { Router, type Request, type Response } from "express"
 import { getGame, type GameDetail } from "../db/games.js";
 import { requireAuth } from "../middleware/auth.js";
-import { validateRating, validateStatus } from "../userGame.js";
+import { validateRating, validateStatus } from "../validation/userGame.js";
 import { getGameStats, getUserGame, setFavorite, setLibrary, setRating, setStatus } from "../db/userGames.js";
-import { publish, subscribe } from "../live.js";
+import { publish, subscribe } from "../realtime/live.js";
 
 export const userGamesRouter = Router();
 

@@ -1,5 +1,5 @@
-import type { Role } from "../roles.js";
-import { validateUsername } from "../username.js";
+import type { Role } from "../validation/roles.js";
+import { validateUsername } from "../validation/username.js";
 import { pool, withTransaction } from "./pool.js";
 import { deleteAllSessions } from "./sessions.js";
 
