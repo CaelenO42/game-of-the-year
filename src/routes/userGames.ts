@@ -1,9 +1,8 @@
-import { Router, type Request, type Response } from "express"
-import { getGame, type GameDetail } from "../db/games.js";
+import { Router } from "express"
 import { requireAuth } from "../middleware/auth.js";
 import { validateRating, validateStatus } from "../validation/userGame.js";
-import { getGameStats, getUserGame, setFavorite, setLibrary, setRating, setStatus } from "../db/userGames.js";
-import { publish, subscribe } from "../realtime/live.js";
+import { getGameStats, setFavorite, setLibrary, setRating, setStatus } from "../db/userGames.js";
+import { publish } from "../realtime/live.js";
 import { findGame } from "./helpers.js";
 
 export const userGamesRouter = Router();
@@ -17,15 +16,6 @@ userGamesRouter.get('/game/:id/stats', async (req, res) => {
     res.render('games/partials/game_stats', { game, stats });
 })
 
-userGamesRouter.get('/game/:id/events', async (req, res) => {
-    const game = await findGame(req, res);
-    if (!game) return;
-
-    res.set({ 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', 'Connection': 'keep-alive' })
-    res.flushHeaders()
-    subscribe(game.id, res);
-})
-
 userGamesRouter.post('/game/:id/rating', requireAuth, async (req, res) => {
     if (!req.user) return res.status(401).end();
 
@@ -37,7 +27,7 @@ userGamesRouter.post('/game/:id/rating', requireAuth, async (req, res) => {
     if (!parsed.ok) return res.status(400).json({ error: parsed.error });
 
     const userGame = await setRating(req.user.id, game.id, parsed.rating);
-    publish(game.id, 'stats-changed');
+    publish(`game:${game.id}`, 'stats-changed');
 
     res.set('HX-Trigger', 'stats-changed');
     res.render('games/partials/user_game_controls', {game, userGame});

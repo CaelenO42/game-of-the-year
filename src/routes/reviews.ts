@@ -54,7 +54,7 @@ reviewsRouter.post('/game/:id/review', requireAuth, async (req, res) => {
 
     const review = await setReview(req.user.id, game.id, validate.review, validate.spoilers);
 
-    publish(game.id, 'reviews-changed');
+    publish(`game:${game.id}`, 'reviews-changed');
     res.set('HX-Trigger', 'reviews-changed');
     res.render('reviews/partials/review_form', { game, userReview: review });
 })
@@ -67,7 +67,7 @@ reviewsRouter.delete('/game/:id/review', requireAuth, async (req, res) => {
 
     await deleteReview(req.user.id, game.id);
 
-    publish(game.id, 'reviews-changed');
+    publish(`game:${game.id}`, 'reviews-changed');
     res.set('HX-Trigger', 'reviews-changed');
     res.render('reviews/partials/review_form', { game });
 })
