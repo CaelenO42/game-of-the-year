@@ -7,17 +7,15 @@ import { getTwitchData } from "../services/twitchData.js";
 import { PAGE_SIZE, searchWithFallback } from "../services/gameSearch.js";
 import { getGameStats, getUserGame } from "../db/userGames.js";
 import { normalizePage } from "../lib/page.js";
+import { findGameFromSlug } from "./helpers.js";
 
 export const gamesRouter = Router();
 
 const MAX_PAGE = 500;
 
 gamesRouter.get('/game/:idslug', async (req, res) => {
-    const id = parseInt(req.params.idslug);
-    if (Number.isNaN(id)) return res.status(404).render('404');
-
-    const game = await getGame(id);
-    if (!game) return res.status(404).render('404');
+    const game = await findGameFromSlug(req, res);
+    if (!game) return;
 
     const path = `/game/${game.id}-${slugify(game.name)}`;
     if (req.path !== path) return res.redirect(301, path);
@@ -28,8 +26,8 @@ gamesRouter.get('/game/:idslug', async (req, res) => {
             return null;
         }),
         getTwitchData(game.id),
-        getGameStats(id),
-        (req.user) ? getUserGame(req.user.id, id) : undefined
+        getGameStats(game.id),
+        (req.user) ? getUserGame(req.user.id, game.id) : undefined
     ])
 
     return res.render('game', { game, steam, twitch, stats, userGame, host: req.hostname });

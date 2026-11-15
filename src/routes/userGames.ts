@@ -4,16 +4,10 @@ import { requireAuth } from "../middleware/auth.js";
 import { validateRating, validateStatus } from "../validation/userGame.js";
 import { getGameStats, getUserGame, setFavorite, setLibrary, setRating, setStatus } from "../db/userGames.js";
 import { publish, subscribe } from "../realtime/live.js";
+import { findGame } from "./helpers.js";
 
 export const userGamesRouter = Router();
 
-async function findGame(req: Request, res: Response): Promise<GameDetail | undefined> {
-    const id = Number(req.params.id);
-    if (!Number.isInteger(id)) { res.status(404).render('404'); return undefined; }
-    const game = await getGame(id);
-    if (!game) { res.status(404).render('404'); return undefined; }
-    return game;
-}
 
 userGamesRouter.get('/game/:id/stats', async (req, res) => {
     const game = await findGame(req, res);
