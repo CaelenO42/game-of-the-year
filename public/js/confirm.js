@@ -5,7 +5,7 @@ function requireElement(selector) {
   return el;
 }
 
-// client/pages/adminUsers.ts
+// client/pages/confirm.ts
 var dialog = requireElement("#confirm-dialog");
 var text = requireElement("#confirm-text");
 var okButton = requireElement("#confirm-ok");
