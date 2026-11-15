@@ -3,15 +3,15 @@ import { normalizePage } from "../lib/page.js";
 import { listUsers, setBanned, setRole } from "../db/users.js";
 import { getCookie, requireAuth, requireRole } from "../middleware/auth.js";
 import { validateRole } from "../validation/roles.js";
-import { error } from "node:console";
 
 export const adminRouter = Router();
 adminRouter.use('/admin', requireAuth, requireRole('admin'));
 
 const PAGE_SIZE = 20;
+const MAX_PAGE = 500;
 
 adminRouter.get('/admin/users', async (req, res) => {
-    const page = normalizePage(req.query.p, PAGE_SIZE);
+    const page = normalizePage(req.query.p, MAX_PAGE);
     const { users, total } = await listUsers(PAGE_SIZE, page);
 
     if (users.length === 0 && page > 1) return res.redirect('/admin/users?p=1');
