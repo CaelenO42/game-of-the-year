@@ -1,0 +1,14 @@
+<section id="review-list" hx-get="/game/{{ game.id }}/reviews/latest"
+    hx-trigger="reviews-changed from:body, sse:reviews-changed" hx-swap="outerHTML">
+    <h3>Reviews</h3>
+
+    {% for review in reviews %}
+    {% include "partials/review_item.njk" %}
+    {% else %}
+    <p>No reviews yet.</p>
+    {% endfor %}
+
+    {% if totalReviews > reviews | length %}
+    <a href="/game/{{ game.id }}-{{ game.name | slugify }}/reviews">See all {{ totalReviews }} reviews</a>
+    {% endif %}
+</section>

@@ -1,0 +1,16 @@
+<article class="review">
+    <header>
+        {{ review.display_name or review.username }}
+        {% if review.rating !== null %}<span>{{ review.rating }}/100</span>{% endif %}
+        <time datetime="{{ review.created_at.toISOString() }}" title="{{ review.created_at | fullDate }}">{{ review.created_at | timeAgo }}</time>
+    </header>
+
+    {% if review.contains_spoilers %}
+    <details>
+        <summary>Contains spoilers</summary>
+        <div style="white-space: pre-wrap">{{ review.body }}</div>
+    </details>
+    {% else %}
+    <div style="white-space: pre-wrap">{{ review.body }}</div>
+    {% endif %}
+</article>

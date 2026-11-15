@@ -18,16 +18,15 @@
     <script src="https://cdn.jsdelivr.net/npm/htmx-ext-sse@2.2.4"
         integrity="sha384-A986SAtodyH8eg8x8irJnYUk7i9inVQqYigD6qZ9evobksGNIXfeFvDwLSHcp31N"
         crossorigin="anonymous"></script>
+    <script type="module" src="/js/confirm.js"></script>
 </head>
 
-<body>
+<body hx-ext="sse" sse-connect="/game/{{ game.id }}/events">
     <p>{{ game.name }}</p>
     <p>{{ game.summary }}</p>
     <p>{{ game.total_review_count }}</p>
     <h3>Game Stats</h3>
-    <div hx-ext="sse" sse-connect="/game/{{ game.id }}/events">
     {% include "partials/game_stats.njk" %}
-    </div>
     <img src="https://images.igdb.com/igdb/image/upload/t_cover_big/{{ game.cover_image_id }}.jpg">
     {% if steam and steam.data %}
     <h3>Steam Info</h3>
@@ -43,9 +42,12 @@
     {% endif %}
     {% if user %}
     {% include "partials/user_game_controls.njk" %}
+    {% include "partials/review_form.njk" %}
     {% else %}
     <a href="/login?next={{ ('/game/' + game.id) | urlencode }}">Log in to rate</a>
     {% endif %}
+    <h3>User Reviews</h3>
+    {% include "partials/review_list.njk" %}
     {% if twitch and twitch.streams %}
     <h3>Twitch Info</h3>
     <p>Viewers on top {{ twitch.streams.length }} streams: {{ twitch.total_viewers.toLocaleString('en-US') }}</p>
@@ -55,6 +57,7 @@
     </iframe>
     {% endfor %}
     {% endif %}
+    {% include "partials/confirm_dialog.njk" %}
 </body>
 
 </html>

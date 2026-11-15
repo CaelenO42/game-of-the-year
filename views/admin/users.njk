@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
         integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
         crossorigin="anonymous"></script>
-    <script type="module" src="/js/adminUsers.js"></script>
+    <script type="module" src="/js/confirm.js"></script>
 </head>
 
 <body>
@@ -28,12 +28,6 @@
         {% include "partials/admin_user.njk" %}
         {% endfor %}
     </table>
-    <dialog id="confirm-dialog">
-        <p id="confirm-text"></p>
-        <button id="confirm-cancel" type="button">Cancel</button>
-        <button id="confirm-ok" type="button">Confirm</button>
-    </dialog>
-
     {% if totalPages > 1 %}
     <nav>
         {% if page > 1 %}<a href="/admin/users?p={{ page - 1 }}">Previous</a>{% endif %}
@@ -44,6 +38,7 @@
     {% else %}
     <p>There are no users in the database.</p>
     {% endif %}
+    {% include "partials/confirm_dialog.njk" %}
 </body>
 
 </html>

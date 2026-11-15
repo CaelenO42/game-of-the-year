@@ -1,7 +1,7 @@
 import type { Response } from "express";
 
 const connections: Map<number, Set<Response>> = new Map();
-export type LiveEvent = 'stats-changed';
+export type LiveEvent = 'stats-changed' | 'reviews-changed';
 
 export function subscribe(gameId: number, res: Response) {
     const set = connections.get(gameId) ?? new Set<Response>();
