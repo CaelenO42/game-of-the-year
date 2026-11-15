@@ -13,6 +13,9 @@ import { userGamesRouter } from './routes/userGames.js';
 import { STATUSES } from './validation/userGame.js';
 import { adminRouter } from './routes/admin.js';
 import { ROLES } from './validation/roles.js';
+import { reviewsRouter } from './routes/reviews.js';
+import { REVIEW_MAX_LENGTH } from './validation/review.js';
+import { slugify } from './lib/slug.js';
 
 export function createApp(): Express {
     const app = express();
@@ -27,8 +30,10 @@ export function createApp(): Express {
     });
     njk.addFilter('timeAgo', (d: Date) => timeAgo(d, new Date()));
     njk.addFilter('fullDate', (d: Date) => new Intl.DateTimeFormat('en-US', {dateStyle: 'long'}).format(d));
+    njk.addFilter('slugify', slugify);
     njk.addGlobal('STATUSES', STATUSES);
     njk.addGlobal('ROLES', ROLES);
+    njk.addGlobal('REVIEW_MAX_LENGTH', REVIEW_MAX_LENGTH);
     app.set("view engine", "njk");
 
     // ┌───────────────────────┐
@@ -56,6 +61,7 @@ export function createApp(): Express {
     app.use(usersRouter);
     app.use(userGamesRouter);
     app.use(adminRouter);
+    app.use(reviewsRouter);
 
     // ┌───────────────────────┐
     // │      Error Routes     │
