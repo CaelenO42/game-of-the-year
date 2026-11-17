@@ -18,6 +18,7 @@ import { REVIEW_MAX_LENGTH } from './validation/review.js';
 import { slugify } from './lib/slug.js';
 import { liveRouter } from './routes/live.js';
 import { apiKeyRouter } from './routes/apiKeys.js';
+import { apiV1Router } from './routes/api.js';
 
 export function createApp(): Express {
     const app = express();
@@ -43,6 +44,10 @@ export function createApp(): Express {
     // └───────────────────────┘
     app.get('/healthz', (req, res) => res.status(200).send('ok'));
 
+    // ┌───────────────────────┐
+    // │          API          │
+    // └───────────────────────┘
+    app.use('/api/v1', apiV1Router); // Define API route before cookie / user / onboarding middleware can take effect
     // ┌───────────────────────┐
     // │       Middleware      │
     // └───────────────────────┘

@@ -10,6 +10,14 @@ export async function findGame(req: Request, res: Response): Promise<GameDetail 
     return game;
 }
 
+export async function findGameJson(req: Request, res: Response): Promise<GameDetail | undefined> {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) { res.status(400).json({ error: 'Invalid game id' }); return undefined; }
+    const game = await getGame(id);
+    if (!game) { res.status(404).json({ error: 'Game not found' }); return undefined; }
+    return game;
+}
+
 export async function findGameFromSlug(req: Request, res: Response): Promise<GameDetail | undefined> {
     const raw = req.params.idslug;
     const id = typeof raw === 'string' ? parseInt(raw, 10) : NaN;
