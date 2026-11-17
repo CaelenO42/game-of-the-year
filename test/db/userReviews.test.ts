@@ -1,6 +1,6 @@
 import { afterAll, beforeEach, describe, expect, test } from "vitest";
 import { pool } from "../../src/db/pool.js";
-import { deleteReview, getReview, getUserReview, listReviewsForGame, setReview } from "../../src/db/userReviews.js";
+import { deleteReview, deleteReviewById, getReview, getUserReview, listReviewsForGame, setReview } from "../../src/db/userReviews.js";
 import { setRating } from "../../src/db/userGames.js";
 import { createTestGame, createTestUser, resetDb } from "../helpers/db.js";
 
@@ -367,6 +367,45 @@ describe("deleteReview", () => {
         await setReview(user.id, game.id, "Loved it", false);
 
         await deleteReview(user.id, game.id);
+
+        const r = await pool.query("SELECT rating FROM user_game WHERE user_id = $1 AND game_id = $2", [user.id, game.id]);
+        expect(r.rows[0].rating).toBe(80);
+    });
+});
+
+describe("deleteReviewById", () => {
+    test("deletes the review and returns its game id", async () => {
+        const { user, game } = await setup();
+        const review = await setReview(user.id, game.id, "Loved it", false);
+
+        const gameId = await deleteReviewById(review.id);
+
+        expect(gameId).toBe(game.id);
+        expect(await getUserReview(user.id, game.id)).toBeUndefined();
+    });
+
+    test("returns undefined for an unknown id", async () => {
+        expect(await deleteReviewById(999999)).toBeUndefined();
+    });
+
+    test("leaves other reviews alone", async () => {
+        const { user, game } = await setup();
+        const other = await createTestUser("other-uid");
+        const mine = await setReview(user.id, game.id, "Loved it", false);
+        await setReview(other.id, game.id, "Meh", false);
+
+        await deleteReviewById(mine.id);
+
+        expect(await reviewCount()).toBe(1);
+        expect(await getUserReview(other.id, game.id)).toBeDefined();
+    });
+
+    test("keeps the author's rating", async () => {
+        const { user, game } = await setup();
+        const review = await setReview(user.id, game.id, "Loved it", false);
+        await setRating(user.id, game.id, 80);
+
+        await deleteReviewById(review.id);
 
         const r = await pool.query("SELECT rating FROM user_game WHERE user_id = $1 AND game_id = $2", [user.id, game.id]);
         expect(r.rows[0].rating).toBe(80);

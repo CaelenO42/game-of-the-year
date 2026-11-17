@@ -25,6 +25,10 @@
             {% if userReview.rating !== null %}<span>{{ userReview.rating }}/100</span>{% endif %}
             <time datetime="{{ userReview.created_at.toISOString() }}"
                 title="{{ userReview.created_at | fullDate }}">{{ userReview.created_at | timeAgo }}</time>
+            {% if user.role === 'admin' %}
+            <button type="button" hx-delete="/admin/reviews/{{ userReview.id }}?from=review" hx-swap="none"
+                hx-confirm="Delete this review?">Delete</button>
+            {% endif %}
         </header>
 
         {% if userReview.contains_spoilers %}
