@@ -1,7 +1,8 @@
 import { afterAll, beforeEach, describe, expect, test } from "vitest";
 import { pool } from "../../src/db/pool.js";
-import { createSession, getSessionUser, deleteSession, deleteSessionById, hashToken, deleteOtherSessions, deleteAllSessions, deleteExpiredSessions, touchSession } from "../../src/db/sessions.js";
+import { createSession, getSessionUser, deleteSession, deleteSessionById, deleteOtherSessions, deleteAllSessions, deleteExpiredSessions, touchSession } from "../../src/db/sessions.js";
 import { createTestUser, resetDb } from "../helpers/db.js";
+import { hashToken } from "../../src/lib/token.js";
 
 const meta = { userAgent: "test", os: null, client: null, location: null };
 
