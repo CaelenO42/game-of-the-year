@@ -87,3 +87,13 @@ export async function deleteReview(userId: number, gameId: number): Promise<numb
 
     return result.rowCount ?? 0;
 }
+
+export async function deleteReviewById(id: number): Promise<number | undefined> {
+    const result = await pool.query<{ game_id: number }>(`
+        DELETE FROM user_review
+        WHERE id = $1
+        RETURNING game_id
+    `, [id]);
+
+    return result.rows[0]?.game_id;
+}

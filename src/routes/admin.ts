@@ -1,8 +1,11 @@
 import { Router } from "express";
 import { normalizePage } from "../lib/page.js";
 import { listUsers, setBanned, setRole } from "../db/users.js";
-import { getCookie, requireAuth, requireRole } from "../middleware/auth.js";
+import { requireAuth, requireRole } from "../middleware/auth.js";
 import { validateRole } from "../validation/roles.js";
+import { deleteReviewById } from "../db/userReviews.js";
+import { publish } from "../realtime/live.js";
+import consola from "consola";
 
 export const adminRouter = Router();
 adminRouter.use('/admin', requireAuth, requireRole('admin'));
@@ -61,4 +64,15 @@ adminRouter.post('/admin/users/:id/ban', async (req, res) => {
         }
     }
     return res.render('admin/partials/admin_user', { u: result.user });
+})
+
+adminRouter.delete('/admin/reviews/:id', async (req, res) => {
+    const id = Number(req.params.id);
+    if (!Number.isInteger(id)) return res.status(400).json({ error: 'Review id must be an integer' });
+
+    const gameId = await deleteReviewById(id);
+    if (gameId === undefined) return res.status(404).json({ error: 'A review with this ID does not exist' });
+    publish(`game:${gameId}`, 'reviews-changed');
+    consola.info(`admin ${req.user?.display_name ?? req.user?.username} (id: ${req.user?.id}) deleted review ${id}`);
+    return res.status(200).end();
 })
