@@ -1,0 +1,302 @@
+openapi: 3.1.0
+info:
+    title: Game of the Year API
+    description: |
+        Official API for the Game of the Year website. All endpoints require an API key provided as a bearer token in the request.
+        You can create an API key on the [API keys page](/settings/api-keys).
+    version: 1.0.0
+servers:
+    - url: /api/v1
+security:
+    - BearerAuth: []
+tags:
+    - name: Account
+      description: Information about the owner of the API key.
+    - name: Games
+      description: Game details and rating statistics.
+    - name: Ratings
+      description: Read, set and remove **your** rating for a game.
+paths:
+    /me:
+        get:
+            tags: [Account]
+            summary: Get the key owner
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/User"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+    /games/{id}:
+        parameters:
+            - $ref: "#/components/parameters/GameId"
+        get:
+            tags: [Games]
+            summary: Get information about a game
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Game"
+                "400":
+                    $ref: "#/components/responses/InvalidGameId"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/GameNotFound"
+    /games/{id}/stats:
+        parameters:
+            - $ref: "#/components/parameters/GameId"
+        get:
+            tags: [Games]
+            summary: Get rating information for a game
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/GameStats"
+                "400":
+                    $ref: "#/components/responses/InvalidGameId"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/GameNotFound"
+    /games/{id}/rating:
+        parameters:
+            - $ref: "#/components/parameters/GameId"
+        get:
+            tags: [Ratings]
+            summary: Get your rating for a game
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserRating"
+                "400":
+                    $ref: "#/components/responses/InvalidGameId"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    description: The game does not exist, or you have not rated it.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+        put:
+            tags: [Ratings]
+            summary: Set your rating for a game
+            description: |
+                Creates your rating, or replaces it if you already have one.
+                A rating is required: to remove a rating, use `DELETE` instead.
+            requestBody:
+                required: true
+                content:
+                    application/json:
+                        schema:
+                            type: object
+                            required: [rating]
+                            properties:
+                                rating:
+                                    type: number
+                                    minimum: 0
+                                    maximum: 100
+                                    example: 85
+                                    description: |
+                                        Rounded to the nearest integer.
+                                        Values outside 0 to 100 are clamped to that range.
+            responses:
+                "200":
+                    description: Successful operation
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/UserRating"
+                "400":
+                    description: |
+                        The game id is invalid, the body is not valid JSON,
+                        or `rating` is missing, `null`, or not a number.
+                    content:
+                        application/json:
+                            schema:
+                                $ref: "#/components/schemas/Error"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/GameNotFound"
+        delete:
+            tags: [Ratings]
+            summary: Remove your rating for a game
+            description: |
+                Only removes the rating. Your status, favorite and library entry for the game are kept.
+                Succeeds even if you had no rating.
+            responses:
+                "204":
+                    description: Successful operation
+                "400":
+                    $ref: "#/components/responses/InvalidGameId"
+                "401":
+                    $ref: "#/components/responses/Unauthorized"
+                "404":
+                    $ref: "#/components/responses/GameNotFound"
+
+components:
+    parameters:
+        GameId:
+            name: id
+            in: path
+            required: true
+            description: The game's id on this site
+            schema:
+                type: integer
+                minimum: 1
+                example: 1
+
+    responses:
+        Unauthorized:
+            description: Missing or invalid API key.
+            headers:
+                WWW-Authenticate:
+                    description: Always `Bearer`.
+                    schema:
+                        type: string
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        InvalidGameId:
+            description: The game id is not a valid number.
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+        GameNotFound:
+            description: Game not found.
+            content:
+                application/json:
+                    schema:
+                        $ref: "#/components/schemas/Error"
+
+    schemas:
+        Error:
+            type: object
+            required: [error]
+            properties:
+                error:
+                    type: string
+
+        Role:
+            type: string
+            enum:
+                - admin
+                - user
+
+        User:
+            type: object
+            required: [id, username, displayName, role, createdAt]
+            properties:
+                id:
+                    type: integer
+                username:
+                    type:
+                        - string
+                        - "null"
+                displayName:
+                    type:
+                        - string
+                        - "null"
+                role:
+                    $ref: "#/components/schemas/Role"
+                createdAt:
+                    type: string
+                    format: date-time
+
+        UserRating:
+            type: object
+            required: [gameId, rating]
+            properties:
+                gameId:
+                    type: integer
+                rating:
+                    type: integer
+
+        Game:
+            type: object
+            required: [id, name, summary, releaseDate, coverUrl, genres, platforms]
+            properties:
+                id:
+                    type: integer
+                name:
+                    type: string
+                summary:
+                    type:
+                        - string
+                        - "null"
+                releaseDate:
+                    type:
+                        - string
+                        - "null"
+                    format: date
+                coverUrl:
+                    type:
+                        - string
+                        - "null"
+                genres:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/GameGenre"
+                platforms:
+                    type: array
+                    items:
+                        $ref: "#/components/schemas/GamePlatform"
+
+        GamePlatform:
+            type: object
+            required: [name, slug, abbreviation]
+            properties:
+                name:
+                    type: string
+                slug:
+                    type: string
+                abbreviation:
+                    type:
+                        - string
+                        - "null"
+
+        GameGenre:
+            type: object
+            required: [name, slug]
+            properties:
+                name:
+                    type: string
+                slug:
+                    type: string
+
+        GameStats:
+            type: object
+            required: [id, name, count, average]
+            properties:
+                id:
+                    type: integer
+                name:
+                    type: string
+                count:
+                    type: integer
+                average:
+                    type:
+                        - number
+                        - "null"
+
+    securitySchemes:
+        BearerAuth:
+            type: http
+            scheme: bearer
+            description: An API key from the [API keys page](/settings/api-keys), starting with `goty_`.

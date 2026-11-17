@@ -148,3 +148,20 @@ CREATE TABLE IF NOT EXISTS user_review (
     UNIQUE (user_id, game_id)
 );
 CREATE INDEX IF NOT EXISTS user_review_game_id_created_at_idx ON user_review (game_id, created_at DESC);
+
+
+-- ┌────────────────────────┐
+-- │     API Key Tables     │
+-- └────────────────────────┘
+CREATE TABLE IF NOT EXISTS api_key (
+    id INTEGER GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    user_id INTEGER NOT NULL REFERENCES app_user (id) ON DELETE CASCADE,
+    
+    name TEXT NOT NULL CHECK (char_length(name) BETWEEN 1 AND 50),
+    key_prefix TEXT NOT NULL,
+    key_hash BYTEA NOT NULL UNIQUE,
+
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_used_at TIMESTAMPTZ
+);
+CREATE INDEX IF NOT EXISTS api_key_user_id_idx ON api_key (user_id);

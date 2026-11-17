@@ -1,19 +1,11 @@
-import { createHash, randomBytes } from "node:crypto";
 import { pool } from "./pool.js";
 import type { SessionMeta } from "../lib/sessionMeta.js";
 import type { UserRow } from "./users.js";
+import { generateToken, hashToken } from "../lib/token.js";
 
 export const SESSION_EXPIRATION_DAYS: number = 30;
 export const LAST_SEEN_AT_INTERVAL_MINS: number = 5;
 export const EXTEND_SESSION_AFTER_DAYS: number = 3;
-
-export function generateToken(): string {
-    return randomBytes(32).toString('base64url');
-}
-
-export function hashToken(token: string): Buffer {
-    return createHash('sha256').update(token).digest();
-}
 
 export async function createSession(userId: number, meta: SessionMeta): Promise<{ token: string, expiresAt: Date}> {
     const token = generateToken();
