@@ -1,0 +1,12 @@
+<tr id="key-entry-{{ apiKey.id }}">
+    <td>{{ apiKey.name }}</td>
+    <td><code>{{ apiKey.key_prefix }}</code></td>
+    <td>{{ apiKey.created_at | fullDate }}</td>
+    <td>{% if apiKey.last_used_at %}{{ apiKey.last_used_at | timeAgo }}{% else %}Never{% endif %}</td>
+    <td>
+        <form hx-delete="/settings/api-keys/{{ apiKey.id }}" hx-confirm="Delete the API Key {{ apiKey.name }}?"
+            hx-target="#key-entry-{{ apiKey.id }}" hx-swap="outerHTML">
+            <button type="submit">Delete Key</button>
+        </form>
+    </td>
+</tr>

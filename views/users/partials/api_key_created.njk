@@ -1,0 +1,10 @@
+{% include 'users/partials/api_key_row.njk' %}
+<div hx-swap-oob="innerHTML:#new-key">
+    <dialog open>
+        <p>Copy your API key now. You won't be able to see it again.</p>
+        <input readonly value="{{ apiKey.key }}">
+        <button type="button" onclick="navigator.clipboard.writeText(this.previousElementSibling.value)">Copy</button>
+        <button type="button" onclick="document.getElementById('new-key').replaceChildren()">Done</button>
+    </dialog>
+</div>
+{% include 'users/partials/api_key_controls.njk' %}

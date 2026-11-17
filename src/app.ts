@@ -17,6 +17,7 @@ import { reviewsRouter } from './routes/reviews.js';
 import { REVIEW_MAX_LENGTH } from './validation/review.js';
 import { slugify } from './lib/slug.js';
 import { liveRouter } from './routes/live.js';
+import { apiKeyRouter } from './routes/apiKeys.js';
 
 export function createApp(): Express {
     const app = express();
@@ -64,7 +65,7 @@ export function createApp(): Express {
     app.use(adminRouter);
     app.use(reviewsRouter);
     app.use(liveRouter);
-
+    app.use(apiKeyRouter);
     // ┌───────────────────────┐
     // │      Error Routes     │
     // └───────────────────────┘

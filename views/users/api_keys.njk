@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.11/dist/htmx.min.js"
+        integrity="sha384-2OatzQy1H+Zd/IIrjr1TcuDGqLXeHhbooAyJY1KdQMKnr4LZ22k31GBLdYKHmVjg"
+        crossorigin="anonymous"></script>
+    <script type="module" src="/js/confirm.js"></script>
+    <title>Document</title>
+    <style>
+        body:has(#key-list tr) #no-keys { display: none; }
+        body:not(:has(#key-list tr)) table { display: none; }
+    </style>
+</head>
+
+<body>
+    <h1>API Keys</h1>
+    {% include 'users/partials/api_key_controls.njk' %}
+    <div id="new-key"></div>
+    <table>
+        <thead>
+            <tr>
+                <th>Key Name</th>
+                <th>Key Prefix</th>
+                <th>Created At</th>
+                <th>Last Used At</th>
+                <th></th>
+            </tr>
+        </thead>
+        <tbody id="key-list">
+            {% for apiKey in apiKeys %}{% include 'users/partials/api_key_row.njk' %}{% endfor %}
+        </tbody>
+    </table>
+    <p id="no-keys">No API keys yet. Create one above.</p>
+    {% include "shared/confirm_dialog.njk" %}
+</body>
+
+</html>

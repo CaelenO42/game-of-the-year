@@ -1,0 +1,10 @@
+<div id="key-controls" {% if oob %} hx-swap-oob="true" {% endif %}>
+    {% if apiKeyCount < MAX_API_KEYS %}
+    <form hx-post="/settings/api-keys" hx-target="#key-list" hx-swap="afterbegin" hx-on::after-request="this.reset()">
+        <input name="name" type="text" minlength="1" maxlength="50" placeholder="API Key Name" required autocomplete="off">
+        <button type="submit">Create Key</button>
+    </form>
+    {% else %}
+    <p>You have reached the maximum number of API Keys, please delete a key before making a new one.</p>
+    {% endif %}
+</div>
