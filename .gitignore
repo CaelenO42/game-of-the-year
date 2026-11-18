@@ -153,3 +153,4 @@ firebase*.json
 
 # Other
 project_specifications.pdf
+public/js
